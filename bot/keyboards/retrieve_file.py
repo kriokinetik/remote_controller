@@ -22,3 +22,11 @@ def next_directory(folders: list) -> InlineKeyboardMarkup:
     keyboard.append([buttons.main_window.main_button])
     # Создаем и возвращаем Inline клавиатуру
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
+
+def get_progress_keyboard(text: str, url: str = None) -> InlineKeyboardMarkup:
+    if url:
+        progress_button = [[InlineKeyboardButton(text=text, url=url)]]
+    else:
+        progress_button = [[InlineKeyboardButton(text=text, callback_data='*')]]
+
+    return InlineKeyboardMarkup(inline_keyboard=progress_button)

@@ -6,8 +6,7 @@ import pyautogui
 from main import logger_info
 from states import DataStates
 from config_reader import SCREENSHOT_NAME
-import keyboards
-import utils
+import keyboards, utils
 
 router = Router()
 

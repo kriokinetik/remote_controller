@@ -2,11 +2,14 @@ from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, FSInputFile
 from aiogram.exceptions import TelegramBadRequest
+import asyncio
 import os
+import time
 
 from main import logger_info, logger_error, logger
 from states import DataStates
-from utils import file_operations, yandex_operations
+from utils import file_operations, yandex_operations, speed_test, YandexUploader
+from utils.speed_test import measure_speed
 from config_reader import MAX_SIZE
 import keyboards
 
@@ -87,71 +90,71 @@ async def handle_send_document(message: Message):
     logger_info(message)
 
     try:
-        # Получаем путь к файлу или папке из сообщения
         path = message.text.replace('\\', '/')
-        # Получаем размер файла или папки
         filesize = file_operations.get_file_or_directory_size(path)
-        # Округленный размер файла в мегабайтах
-        rounded_filesize = round(filesize / 2 ** 20, 1)
-        # Примерное время ожидания загрузки документа
-        estimated_time = round(rounded_filesize / 5)
 
         if os.path.isfile(path):
-            # Название документа
             _, filename = path.rsplit('/', maxsplit=1)
-            # Если это файл и его размер меньше максимального
-            if filesize < MAX_SIZE:
-                await message.reply(f'Файл <code>{filename}</code> загружается...\n')
-                await message.reply_document(document=FSInputFile(path=path))
-
-            # Если файл слишком большой, загружаем его на Яндекс.Диск
-            else:
-                download_message = await message.reply(f'Файл <code>{filename}</code> загружается на Яндекс.Диск...\n'
-                                                       f'Размер файла: <code>{rounded_filesize} MB</code>\n'
-                                                       f'Примерное время ожидания: {estimated_time} сек'
-                                                       )
-                logger.info(f'Start uploading file "{path}" (size: {filesize} bytes) to Yandex Disk')  # logging
-                download_link = await yandex_operations.upload_file_to_yandex_disk_and_get_link(path, estimated_time)
-                logger.info(f'File "{path}" (size: {filesize} bytes) has been successfully uploaded to Yandex Disk')
-                await download_message.edit_text(f'Файл: <code>{filename}</code>\n'
-                                                 f'Размер файла: <code>{rounded_filesize} MB</code>\n\n'
-                                                 f'<a href="{download_link}">Скачать файл...</a>'
-                                                 )
-
+            is_file = True
         elif os.path.isdir(path):
-            # Название папки
-            _, foldername = path[:-1].rsplit('/', maxsplit=1)
-            # Если это папка, сжимаем её в ZIP
-            logger.info(f'Folder "{path}" is being compressed')  # logging
-            await message.reply(f'Папка <code>{foldername}</code> архивируется...\n'
-                                f'Размер папки: <code>{rounded_filesize} MB</code>'
-                                )
-            archive_path = file_operations.compress_folder_to_zip(path)
-            logger.info(f'Folder "{path}" has been archived successfully')  # logging
-            # Если размер архива меньше максимального, отправляем как документ
-            if os.path.getsize(archive_path) < MAX_SIZE:
-                await message.reply_document(document=FSInputFile(path=archive_path))
+            await message.reply(f'Архивируется...')
+            path = file_operations.compress_folder_to_zip(path)
+            _, filename = path.rsplit('/', maxsplit=1)
+            filesize = os.path.getsize(path)
+            is_file = False
+        else:
+            await message.reply('Указанный путь не существует или не является доступным файлом/папкой')
+            return
 
-            # Иначе загружаем архив на Яндекс.Диск
-            else:
-                download_message = await message.reply(
-                    f'Архив <code>{foldername}</code> загружается на Яндекс.Диск...\n'
-                    f'Размер архива: <code>{rounded_filesize} MB</code>\n'
-                    f'Примерное время ожидания: {estimated_time} сек'
-                )
-                logger.info(f'Start uploading archive "{foldername}" (size: {filesize} bytes) to Yandex '
-                            f'Disk')  # logging
-                download_link = await yandex_operations.upload_file_to_yandex_disk_and_get_link(archive_path,
-                                                                                                estimated_time)
-                logger.info(f'Archive "{foldername}" (size: {filesize} bytes) has been successfully uploaded to Yandex '
-                            f'Disk')  # logging
-                await download_message.edit_text(f'Архив: <code>{foldername}</code>\n'
-                                                 f'Размер архива: <code>{rounded_filesize} MB</code>\n\n'
-                                                 f'<a href="{download_link}">Скачать архив...</a>'
-                                                 )
+        if filesize < MAX_SIZE:
+            await message.reply(f'Файл <code>{filename}</code> загружается...\n')
+            await message.reply_document(document=FSInputFile(path=path))
+        else:
+            internet_speed_task = asyncio.create_task(measure_speed("upload", False))
 
-            # Удаляем временный архив
-            os.remove(archive_path)
+            rounded_filesize = speed_test.humansize(filesize)
+
+            download_message = await message.reply(f'Файл <code>{filename}</code> загружается на Яндекс.Диск...\n'
+                                                   f'Размер файла: <code>{rounded_filesize}</code>\n'
+                                                   f'Время ожидания: —',
+                                                   reply_markup=keyboards.retrieve_file.get_progress_keyboard('...'))
+
+            yandex_uploader = YandexUploader(path, filesize, download_message)
+
+            if not await yandex_uploader.check_file_existence():
+                try:
+                    internet_speed = await internet_speed_task
+                    logger.info(f'Upload speed: {internet_speed}')  # logging
+
+                    upload_time = filesize / internet_speed
+                    estimated_time = time.strftime("%H:%M:%S", time.gmtime(upload_time))
+
+                    yandex_uploader.upload_speed = internet_speed
+
+                except ValueError as e:
+                    estimated_time = "N/A"
+                    logger_error(e)
+
+                download_message = await download_message.edit_text(f'Файл: <code>{filename}</code>\n'
+                                                                    f'Размер файла: <code>{rounded_filesize}</code>\n'
+                                                                    f'Время ожидания: {estimated_time}',
+                                                                    reply_markup=download_message.reply_markup
+                                                                    )
+
+                yandex_uploader.message = download_message
+
+                await yandex_uploader.upload_file_to_yandex_disk()
+                logger.info(f'Start uploading file "{path}" (size: {filesize} bytes) to Yandex Disk')  # logging
+
+            download_link = await yandex_uploader.get_yandex_link()
+            logger.info(f'File "{path}" (size: {filesize} bytes) has been successfully uploaded to Yandex Disk')
+            await download_message.edit_text(f'Файл: <code>{filename}</code>\n'
+                                             f'Размер файла: <code>{rounded_filesize}</code>',
+                                             reply_markup=keyboards.retrieve_file.get_progress_keyboard(
+                                                 'Скачать файл...', download_link)
+                                             )
+            if not is_file:
+                os.remove(path)
 
     except (FileNotFoundError, PermissionError) as e:
         logger_error(e, exc_info=True)

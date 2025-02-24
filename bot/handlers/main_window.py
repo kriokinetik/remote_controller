@@ -4,9 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, BufferedInputFile
 
 from filters import BotAccessFilter
-import keyboards
-import states
-import utils
+import keyboards, states, utils
 
 from main import logger_info
 from config_reader import SCREENSHOT_NAME
