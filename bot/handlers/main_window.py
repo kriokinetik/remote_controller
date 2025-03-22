@@ -84,3 +84,20 @@ async def retrieve_file_menu_handler(callback: CallbackQuery, state: FSMContext)
 
     # Отправка ответа пользователю
     await callback.answer('')
+
+
+# Обработчик для измерения скорости интернета
+@router.callback_query(F.data == 'speed_test')
+async def send_speed_test_handler(callback: CallbackQuery):
+    logger_info(callback)
+
+    # Получение пути к рабочему столу и обновление данных в состоянии
+    msg = await callback.message.answer(text='Speedtest запущен...')
+    download, upload = utils.speed_test.speed_test()
+
+    await msg.edit_text(text=f'Download: {download}\n'
+                             f'Upload: {upload}'
+                        )
+
+    # Отправка ответа пользователю
+    await callback.answer('')

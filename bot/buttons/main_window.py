@@ -15,6 +15,9 @@ screenshot = InlineKeyboardButton(text='Скриншот', callback_data='screen
 # Кнопка для управления файлами
 retrieve_file = InlineKeyboardButton(text='Управление файлами', callback_data='retrieve_file')
 
+# Кнопка для измерения скорости интернета
+speed_test = InlineKeyboardButton(text='Speed Test', callback_data='speed_test')
+
 # # Кнопка для выключения компьютера с подтверждением действия
 # shutdown_pc = InlineKeyboardButton(text='Выключить компьютер', callback_data='shutdown_pc')
 #
