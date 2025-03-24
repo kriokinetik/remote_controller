@@ -1,2 +1,2 @@
-from . import main_window
+from . import home
 from . import subhandlers

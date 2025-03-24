@@ -6,9 +6,9 @@ import time
 import hashlib
 from aiogram.types import Message
 
-from bot.keyboards.retrieve_file import get_progress_keyboard
-from config_reader import yandex_token, yandex_id, yandex_secret, YANDEX_FOLDER
-from bot.logger import logger_error, logger
+from bot.keyboards.files import get_progress_keyboard
+from config import yandex_token, yandex_id, yandex_secret, YANDEX_FOLDER
+from tools.logger import logger_error, logger
 
 
 class YandexUploader:
@@ -20,11 +20,11 @@ class YandexUploader:
         self.message = message
         self.upload_speed = upload_speed
 
-        self.file_basename = path.rsplit('/', maxsplit=1)[1]
-        self.filename, self.extension = self.file_basename.rsplit('.', maxsplit=1)
+        self.file_basename = path.rsplit("/", maxsplit=1)[1]
+        self.filename, self.extension = self.file_basename.rsplit(".", maxsplit=1)
 
-        self.yandex_dst_path = f'/{YANDEX_FOLDER}/{self.filename}.some_other_extension'
-        self.yandex_src_path = f'/{YANDEX_FOLDER}/{self.filename}.{self.extension}'
+        self.yandex_dst_path = f"/{YANDEX_FOLDER}/{self.filename}.some_other_extension"
+        self.yandex_src_path = f"/{YANDEX_FOLDER}/{self.filename}.{self.extension}"
 
         logger.info(f"YandexUploader initialized for {self.file_basename}, size: {self.filesize} bytes")
 
@@ -40,7 +40,7 @@ class YandexUploader:
                 await client.mkdir(YANDEX_FOLDER)
 
             try:
-                yandex_file_hash = (await client.get_meta(self.yandex_src_path, fields=['md5']))['md5']
+                yandex_file_hash = (await client.get_meta(self.yandex_src_path, fields=["md5"]))["md5"]
                 logger.info(f"File {self.yandex_src_path} exists on Yandex Disk")
             except yadisk.exceptions.NotFoundError:
                 logger.info(f"File {self.yandex_src_path} not found on Yandex Disk")
@@ -129,8 +129,8 @@ async def shorten_url(long_url: str) -> str:
     :return: Сокращенная ссылка.
     """
 
-    endpoint = 'https://clck.ru/--'
-    params = {'url': long_url + '?utm_source=sender'}
+    endpoint = "https://clck.ru/--"
+    params = {"url": long_url + "?utm_source=sender"}
 
     async with aiohttp.ClientSession() as session:
         async with session.get(endpoint, params=params) as response:
@@ -147,7 +147,7 @@ async def get_file_hash(path: str) -> str:
     :return: Хеш файла #или None, если что-то пошло не так.
     """
 
-    async with aiofiles.open(path, 'rb') as file:
+    async with aiofiles.open(path, "rb") as file:
         data = await file.read()
         md5_hash = hashlib.md5(data).hexdigest()
 

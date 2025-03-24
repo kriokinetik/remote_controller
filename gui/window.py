@@ -8,7 +8,7 @@ class RemoteControllerWindow(QMainWindow):
 
         self.setWindowTitle("remote controller")
         self.setGeometry(100, 100, 1150, 600)
-        self.setWindowIcon(QIcon("static/icon.png"))
+        self.setWindowIcon(QIcon("assets/icon.png"))
 
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
@@ -22,7 +22,7 @@ class RemoteControllerWindow(QMainWindow):
 
         self.central_widget.setLayout(layout)
 
-        self.tray_icon = QSystemTrayIcon(QIcon("static/icon.png"), self)
+        self.tray_icon = QSystemTrayIcon(QIcon("assets/icon.png"), self)
         self.tray_menu = QMenu(title="remote controller")
 
         open_action = QAction("Open", self)

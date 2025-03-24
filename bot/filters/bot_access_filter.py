@@ -1,7 +1,7 @@
 from aiogram.types import Message
 from aiogram.filters import Filter
 
-from config_reader import admin
+from config import admin
 
 
 class BotAccessFilter(Filter):
@@ -10,6 +10,4 @@ class BotAccessFilter(Filter):
         Проверяет, является ли отправитель сообщения администратором бота.
         """
 
-        # Проверяем, является ли отправитель сообщения (ID) администратором бота
         return message.from_user.id == admin
-

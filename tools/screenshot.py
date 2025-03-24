@@ -23,8 +23,8 @@ def get_cursor_image():
 
     bmp_info = hbmp.GetInfo()
     bmp_str = hbmp.GetBitmapBits(True)
-    cursor_image = Image.frombuffer('RGB', (bmp_info['bmWidth'], bmp_info['bmHeight']),
-                                    bmp_str, 'raw', 'BGRX', 0, 1).convert("RGBA")
+    cursor_image = Image.frombuffer("RGB", (bmp_info["bmWidth"], bmp_info["bmHeight"]),
+                                    bmp_str, "raw", "BGRX", 0, 1).convert("RGBA")
 
     win32gui.DestroyIcon(hcursor)
     win32gui.DeleteObject(hbmp.GetHandle())
@@ -68,6 +68,6 @@ def overlay_cursor_on_screenshot(parameter: bool) -> io.BytesIO:
 
     # Создаем поток BytesIO для сохранения скриншота
     output = io.BytesIO()
-    screenshot.save(output, 'png')
+    screenshot.save(output, "png")
 
     return output

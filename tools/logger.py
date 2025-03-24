@@ -1,7 +1,6 @@
 import logging
 
 
-# Настройка логирования
 logger = logging.getLogger('remote_controller')
 
 

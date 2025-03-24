@@ -16,15 +16,15 @@ def is_hidden_file(file_path: str) -> bool:
         # Проверяем, является ли файл скрытым
         return attributes & 2 == 2
     except OSError as e:
-        print(f'Error: {e}')
+        print(f"Error: {e}")
         return False
 
 
 def is_ignored_folders(folder_name: str) -> bool:
     """Проверяет, находится ли папка в игнор-листе."""
 
-    ignored_folders = ['Documents and Settings', 'ESD', 'Intel', 'MC12demo', 'PerfLogs']
-    ignored_prefixes = ('.', '$', 'Windows')  # Список игнорируемых папок
+    ignored_folders = ["Documents and Settings", "ESD", "Intel", "MC12demo", "PerfLogs"]
+    ignored_prefixes = (".", "$", "Windows")  # Список игнорируемых папок
     return folder_name.startswith(ignored_prefixes) or folder_name in ignored_folders
 
 
@@ -32,12 +32,12 @@ def is_ignored_document(document_name: str) -> bool:
     """Проверяет, находится ли файл в игнор-листе."""
 
     # Список игнорируемых расширений файлов
-    ignored_extensions = ('.tmp', '.bak', '.old', '.ini', '.lnk', '.pri', '.lst', '.SFX', '.dat')
-    ignored_prefixes = ('~', '.')  # Префиксы, которые должны игнорироваться
+    ignored_extensions = (".tmp", ".bak", ".old", ".ini", ".lnk", ".pri", ".lst", ".SFX", ".dat")
+    ignored_prefixes = ("~", ".")  # Префиксы, которые должны игнорироваться
     return document_name.endswith(ignored_extensions) or document_name.startswith(ignored_prefixes)
 
 
-def sort_documents_in_directory(directory_path: str) -> (list, list):
+def sort_documents_in_directory(directory_path: str) -> (list[str], list[str]):
     """
     Сортирует документы и папки в указанной директории.
 
@@ -45,21 +45,17 @@ def sort_documents_in_directory(directory_path: str) -> (list, list):
     :return: Кортеж, содержащий отсортированные списки папок и документов.
     """
 
-    folders, documents = [], []
-    # Проходим по всем элементам в директории
+    folders, files = [], []
     for item in os.scandir(directory_path):
-        # Проверяем, не скрыт ли файл
         if not is_hidden_file(os.path.join(directory_path, item.name)):
-            # Если это папка и не находится в игнор-листе
             if item.is_dir() and not is_ignored_folders(item.name):
-                folders.append(f'{item.name}\\')
-            # Если это файл и не находится в игнор-листе, добавляем его в список документов
+                folders.append(f"{item.name}\\")
             elif item.is_file() and not is_ignored_document(item.name):
-                documents.append(f'• <code>{item.name}</code>')
-    return sorted(folders), sorted(documents)
+                files.append(f"• <code>{item.name}</code>")
+    return sorted(folders), sorted(files)
 
 
-def generate_directory_info(current_directory: str) -> (str, list[str]):
+def get_directory_info(current_directory: str) -> (list[str], list[str]):
     """
     Возвращает список документов и папок в текущей директории.
 
@@ -67,12 +63,14 @@ def generate_directory_info(current_directory: str) -> (str, list[str]):
     :return: Кортеж, содержащий строку с информацией о текущем пути и список папок.
     """
 
-    # Сортируем документы и папки в текущей директории
-    folders, documents = sort_documents_in_directory(current_directory)
-    # Возвращаем строку с информацией о текущем пути и список папок
-    return ((f'<code>{current_directory}</code>\n'
-            f'────────────────────────\n') + '\n'.join(documents),
-            folders)
+    folders, files = sort_documents_in_directory(current_directory)
+    documents_text = "\n".join(files)
+    space_line = "────────────────────────"
+    result_text = f"<code>{current_directory}</code>\n"\
+                  f"{space_line}\n"\
+                  f"{documents_text}"
+
+    return result_text, files
 
 
 def get_desktop_path() -> str:
@@ -82,7 +80,7 @@ def get_desktop_path() -> str:
     :return: Путь к рабочему столу пользователя.
     """
 
-    return os.path.join(os.path.expanduser("~"), "Desktop") + '\\'
+    return os.path.join(os.path.expanduser("~"), "Desktop") + "\\"
 
 
 def get_file_or_directory_size(path: str) -> int:
@@ -114,14 +112,14 @@ def compress_folder_to_zip(folder_path: str) -> str:
     :return: Путь к созданному архиву .zip.
     """
 
-    _, folder_name = folder_path[:-1].rsplit('/', maxsplit=1)
-    archive_folder_path = f'../misc/{folder_name}'
+    _, folder_name = folder_path[:-1].rsplit("/", maxsplit=1)
+    archive_folder_path = f"./misc/{folder_name}"
 
-    if not os.path.exists(f'{archive_folder_path}.zip'):
-        shutil.make_archive(archive_folder_path, 'zip', folder_path)
+    if not os.path.exists(f"{archive_folder_path}.zip"):
+        shutil.make_archive(archive_folder_path, "zip", folder_path)
 
-    return f'{archive_folder_path}.zip'
+    return f"{archive_folder_path}.zip"
 
 
 def get_archive_folder_path(folder_name):
-    return f'../misc/{folder_name}.zip'
+    return f"./misc/{folder_name}.zip"
