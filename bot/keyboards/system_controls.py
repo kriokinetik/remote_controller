@@ -1,5 +1,5 @@
 from aiogram.types import InlineKeyboardMarkup
-import buttons  # Импорт кнопок из модуля buttons
+from bot import buttons
 
 restart_confirmation = InlineKeyboardMarkup(
     inline_keyboard=[

@@ -3,10 +3,10 @@ from aiogram.types import Message, CallbackQuery, BufferedInputFile
 from aiogram.fsm.context import FSMContext
 import pyautogui
 
-from main import logger_info
-from states import DataStates
+from bot.logger import logger_event_info
+from bot.states import DataStates
+from bot import keyboards, utils
 from config_reader import SCREENSHOT_NAME
-import keyboards, utils
 
 router = Router()
 
@@ -14,7 +14,7 @@ router = Router()
 # Обработчик для кнопки "Левый клик"
 @router.callback_query(F.data == 'mouse_left')
 async def mouse_left_click_handler(callback: CallbackQuery):
-    logger_info(callback)
+    logger_event_info(callback)
 
     # Имитируем нажатие левой кнопки мыши
     pyautogui.click(button='left')
@@ -24,7 +24,7 @@ async def mouse_left_click_handler(callback: CallbackQuery):
 # Обработчик для кнопки "Правый клик"
 @router.callback_query(F.data == 'mouse_right')
 async def clich_right_mouse_button_handler(callback: CallbackQuery):
-    logger_info(callback)
+    logger_event_info(callback)
 
     # Имитируем нажатие правой кнопки мыши
     pyautogui.click(button='right')
@@ -34,7 +34,7 @@ async def clich_right_mouse_button_handler(callback: CallbackQuery):
 # Обработчик для кнопки "Вверх"
 @router.callback_query(F.data == 'move_up')
 async def up_click_handler(callback: CallbackQuery):
-    logger_info(callback)
+    logger_event_info(callback)
 
     # Имитируем нажатие клавиши "Вверх"
     pyautogui.press('up')
@@ -44,7 +44,7 @@ async def up_click_handler(callback: CallbackQuery):
 # Обработчик для кнопки "Вниз"
 @router.callback_query(F.data == 'move_down')
 async def down_click_handler(callback: CallbackQuery):
-    logger_info(callback)
+    logger_event_info(callback)
 
     # Имитируем нажатие клавиши "Вниз"
     pyautogui.press('down')
@@ -54,7 +54,7 @@ async def down_click_handler(callback: CallbackQuery):
 # Обработчик для кнопки "Влево"
 @router.callback_query(F.data == 'move_left')
 async def left_click_handler(callback: CallbackQuery):
-    logger_info(callback)
+    logger_event_info(callback)
 
     # Имитируем нажатие клавиши "Влево"
     pyautogui.press('left')
@@ -64,7 +64,7 @@ async def left_click_handler(callback: CallbackQuery):
 # Обработчик для кнопки "Вправо"
 @router.callback_query(F.data == 'move_right')
 async def right_click_handler(callback: CallbackQuery):
-    logger_info(callback)
+    logger_event_info(callback)
 
     # Имитируем нажатие клавиши "Вправо"
     pyautogui.press('right')
@@ -74,7 +74,7 @@ async def right_click_handler(callback: CallbackQuery):
 # Обработчик для кнопки "Пробел"
 @router.callback_query(F.data == 'press_space')
 async def space_click_handler(callback: CallbackQuery):
-    logger_info(callback)
+    logger_event_info(callback)
 
     # Имитируем нажатие клавиши "Пробел"
     pyautogui.press('space')
@@ -84,7 +84,7 @@ async def space_click_handler(callback: CallbackQuery):
 # Обработчик для кнопки "Backspace"
 @router.callback_query(F.data == 'press_backspace')
 async def backspace_click_handler(callback: CallbackQuery):
-    logger_info(callback)
+    logger_event_info(callback)
 
     # Имитируем нажатие клавиши "Backspace"
     pyautogui.press('backspace')
@@ -94,7 +94,7 @@ async def backspace_click_handler(callback: CallbackQuery):
 # Обработчик для кнопки "Enter"
 @router.callback_query(F.data == 'press_enter')
 async def enter_click_handler(callback: CallbackQuery):
-    logger_info(callback)
+    logger_event_info(callback)
 
     # Имитируем нажатие клавиши "Enter"
     pyautogui.press('enter')
@@ -104,7 +104,7 @@ async def enter_click_handler(callback: CallbackQuery):
 # Обработчик для кнопки "Свернуть все окна"
 @router.callback_query(F.data == 'minimize')
 async def minimize_windows_handler(callback: CallbackQuery):
-    logger_info(callback)
+    logger_event_info(callback)
 
     # Имитируем нажатие комбинации клавиш для сворачивания всех окон
     pyautogui.hotkey('win', 'm')
@@ -114,7 +114,7 @@ async def minimize_windows_handler(callback: CallbackQuery):
 # Обработчик для запроса координат мыши
 @router.callback_query(F.data == 'replace_mouse')
 async def request_coordinates_handler(callback: CallbackQuery, state: FSMContext):
-    logger_info(callback)
+    logger_event_info(callback)
 
     bound_x, bound_y = pyautogui.size()
     await callback.message.edit_text(
@@ -129,7 +129,7 @@ async def request_coordinates_handler(callback: CallbackQuery, state: FSMContext
 # Обработчик для получения координат мыши
 @router.message(DataStates.coordinates)
 async def replace_mouse_handler(message: Message):
-    logger_info(message)
+    logger_event_info(message)
 
     try:
         x, y = map(int, message.text.split())

@@ -1,5 +1,5 @@
 from aiogram.types import InlineKeyboardMarkup
-import buttons  # Импорт кнопок из модуля buttons
+from bot import buttons  # Импорт кнопок из модуля buttons
 
 # Создание клавиатуры для управления клавиатурой и мышью
 input_controls = InlineKeyboardMarkup(

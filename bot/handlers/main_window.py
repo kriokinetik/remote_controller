@@ -3,10 +3,10 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, BufferedInputFile
 
-from filters import BotAccessFilter
-import keyboards, states, utils
+from bot.filters import BotAccessFilter
+from bot import keyboards, states, utils
 
-from main import logger_info
+from bot.logger import logger_info, logger_event_info
 from config_reader import SCREENSHOT_NAME
 
 router = Router()
@@ -15,7 +15,7 @@ router = Router()
 # Обработчик команды /start
 @router.message(Command('start'), BotAccessFilter())
 async def send_remote_controller_handler(message: Message):
-    logger_info(message)
+    logger_event_info(message)
 
     # Отправка клавиатуры пользователю
     await message.answer(text='remote controller', reply_markup=keyboards.main_window.main_keyboard)
@@ -24,7 +24,7 @@ async def send_remote_controller_handler(message: Message):
 # Обработчик для запроса на отправку скриншота
 @router.callback_query(F.data == 'screenshot')
 async def send_screenshot_handler(callback: CallbackQuery):
-    logger_info(callback)
+    logger_event_info(callback)
 
     # Получение скриншота без курсора
     image = utils.screenshot_utils.overlay_cursor_on_screenshot(False)
@@ -41,7 +41,7 @@ async def send_screenshot_handler(callback: CallbackQuery):
 # Обработчик для запроса на отправку пульта управления клавиатурой и мышью
 @router.callback_query(F.data == 'input_controls')
 async def send_input_controls_handler(callback: CallbackQuery, state: FSMContext):
-    logger_info(callback)
+    logger_event_info(callback)
 
     await callback.message.edit_text(text='Клавиатура и мышь', reply_markup=keyboards.input_controls.input_controls)
     await callback.answer('')
@@ -52,7 +52,7 @@ async def send_input_controls_handler(callback: CallbackQuery, state: FSMContext
 # Обработчик для запроса на отправку главного окна
 @router.callback_query(F.data == 'main')
 async def send_main_window_handler(callback: CallbackQuery, state: FSMContext):
-    logger_info(callback)
+    logger_event_info(callback)
 
     await callback.message.edit_text(text='remote controller', reply_markup=keyboards.main_window.main_keyboard)
     await callback.answer('')
@@ -70,7 +70,7 @@ async def send_main_window_handler(callback: CallbackQuery, state: FSMContext):
 # Обработчик для отправки меню проводника
 @router.callback_query(F.data == 'retrieve_file')
 async def retrieve_file_menu_handler(callback: CallbackQuery, state: FSMContext):
-    logger_info(callback)
+    logger_event_info(callback)
 
     # Получение пути к рабочему столу и обновление данных в состоянии
     data = await state.update_data(path=utils.file_operations.get_desktop_path())
@@ -89,7 +89,7 @@ async def retrieve_file_menu_handler(callback: CallbackQuery, state: FSMContext)
 # Обработчик для измерения скорости интернета
 @router.callback_query(F.data == 'speed_test')
 async def send_speed_test_handler(callback: CallbackQuery):
-    logger_info(callback)
+    logger_event_info(callback)
 
     # Получение пути к рабочему столу и обновление данных в состоянии
     msg = await callback.message.answer(text='Speedtest запущен...')

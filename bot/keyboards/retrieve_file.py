@@ -1,5 +1,5 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-import buttons  # Импорт кнопок из модуля buttons
+from bot import buttons
 
 
 def next_directory(folders: list) -> InlineKeyboardMarkup:

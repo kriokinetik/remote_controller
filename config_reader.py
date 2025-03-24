@@ -14,5 +14,5 @@ yandex_secret = os.environ['YANDEX_SECRET']
 # CONST
 SCREENSHOT_NAME = 'screenshot.png'
 YANDEX_FOLDER = 'remote_controller'
-LOG_FILE = '../remote_controller.log'
+LOG_FILE = 'remote_controller.log'
 MAX_SIZE = 52428800

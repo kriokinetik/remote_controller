@@ -3,9 +3,9 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command
 import os
 
-import keyboards
-from filters import BotAccessFilter
-from main import logger_info
+from bot import keyboards
+from bot.filters import BotAccessFilter
+from bot.logger import logger_event_info
 
 router = Router()
 
@@ -13,7 +13,7 @@ router = Router()
 # Обработчик для запроса подтверждения перезагрузки или выключения компьютера
 @router.message(Command('restart', 'shutdown'), BotAccessFilter())
 async def system_control_handler(message: Message):
-    logger_info(message)
+    logger_event_info(message)
 
     # Определяем, какое действие требуется (перезагрузка или выключение)
     action = message.text.lower()
@@ -31,7 +31,7 @@ async def system_control_handler(message: Message):
 # Обработчик для отмены запроса перезагрузки или выключения
 @router.callback_query(F.data.in_({'cancel_restart', 'cancel_shutdown'}))
 async def cancel_system_control_handler(callback: CallbackQuery):
-    logger_info(callback)
+    logger_event_info(callback)
 
     # Отменяем операцию и сообщаем об этом пользователю
     await callback.message.edit_text(text='Отменено.')
@@ -40,7 +40,7 @@ async def cancel_system_control_handler(callback: CallbackQuery):
 # Обработчик подтверждения перезагрузки или выключения
 @router.callback_query(F.data.in_({'confirm_restart', 'confirm_shutdown'}))
 async def confirm_system_control_handler(callback: CallbackQuery):
-    logger_info(callback)
+    logger_event_info(callback)
 
     # В зависимости от выбора пользователя, выполняем перезагрузку или выключение
     if callback.data == 'confirm_restart':

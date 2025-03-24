@@ -6,9 +6,9 @@ import time
 import hashlib
 from aiogram.types import Message
 
-from keyboards.retrieve_file import get_progress_keyboard
+from bot.keyboards.retrieve_file import get_progress_keyboard
 from config_reader import yandex_token, yandex_id, yandex_secret, YANDEX_FOLDER
-from main import logger, logger_error
+from bot.logger import logger_error, logger
 
 
 class YandexUploader:

@@ -6,19 +6,19 @@ import asyncio
 import os
 import time
 
-from main import logger_info, logger_error, logger
-from states import DataStates
-from utils import file_operations, yandex_operations, speed_test, YandexUploader
-from utils.speed_test import measure_speed
+from bot.logger import logger_info, logger_error, logger_event_info
+from bot.states import DataStates
+from bot.utils import file_operations, yandex_operations, speed_test, YandexUploader
+from bot.utils.speed_test import measure_speed
 from config_reader import MAX_SIZE
-import keyboards
+from bot import keyboards
 
 router = Router()
 
 
 @router.callback_query(F.data == 'traverse_up_directory')
 async def handle_traverse_up_directory(callback: CallbackQuery, state: FSMContext):
-    logger_info(callback)
+    logger_event_info(callback)
 
     try:
         # Получаем текущий путь из состояния FSM
@@ -45,7 +45,7 @@ async def handle_traverse_up_directory(callback: CallbackQuery, state: FSMContex
 
 @router.callback_query(F.data.in_({'D:\\', 'C:\\'}))
 async def handle_traverse_up_to_disk(callback: CallbackQuery, state: FSMContext):
-    logger_info(callback)
+    logger_event_info(callback)
 
     try:
         # Получаем выбранный диск из данных обратного вызова
@@ -65,7 +65,7 @@ async def handle_traverse_up_to_disk(callback: CallbackQuery, state: FSMContext)
 
 @router.callback_query(F.data.endswith(os.sep))
 async def handle_traverse_up_directory(callback: CallbackQuery, state: FSMContext):
-    logger_info(callback)
+    logger_event_info(callback)
 
     # Получаем текущий путь из состояния FSM
     current_path = (await state.get_data()).get('path', '')
@@ -87,7 +87,7 @@ async def handle_traverse_up_directory(callback: CallbackQuery, state: FSMContex
 
 @router.message(DataStates.path)
 async def handle_send_document(message: Message):
-    logger_info(message)
+    logger_event_info(message)
 
     try:
         path = message.text.replace('\\', '/')
@@ -124,7 +124,7 @@ async def handle_send_document(message: Message):
             if not await yandex_uploader.check_file_existence():
                 try:
                     internet_speed = await internet_speed_task
-                    logger.info(f'Upload speed: {internet_speed}')  # logging
+                    logger_info(f'Upload speed: {internet_speed}')  # logging
 
                     upload_time = filesize / internet_speed
                     estimated_time = time.strftime("%H:%M:%S", time.gmtime(upload_time))
@@ -144,10 +144,10 @@ async def handle_send_document(message: Message):
                 yandex_uploader.message = download_message
 
                 await yandex_uploader.upload_file_to_yandex_disk()
-                logger.info(f'Start uploading file "{path}" (size: {filesize} bytes) to Yandex Disk')  # logging
+                logger_info(f'Start uploading file "{path}" (size: {filesize} bytes) to Yandex Disk')  # logging
 
             download_link = await yandex_uploader.get_yandex_link()
-            logger.info(f'File "{path}" (size: {filesize} bytes) has been successfully uploaded to Yandex Disk')
+            logger_info(f'File "{path}" (size: {filesize} bytes) has been successfully uploaded to Yandex Disk')
             await download_message.edit_text(f'Файл: <code>{filename}</code>\n'
                                              f'Размер файла: <code>{rounded_filesize}</code>',
                                              reply_markup=keyboards.retrieve_file.get_progress_keyboard(
