@@ -152,8 +152,8 @@ async def handle_send_document(message: Message):
                                              reply_markup=keyboards.files.get_progress_keyboard(
                                                  "Скачать файл...", download_link)
                                              )
-            if not is_file:
-                os.remove(path)
+        if not is_file:
+            os.remove(path)
 
     except (FileNotFoundError, PermissionError) as e:
         logger.logger_error(e, exc_info=True)
