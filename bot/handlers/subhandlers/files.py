@@ -9,76 +9,79 @@ from aiogram.exceptions import TelegramBadRequest
 from tools import YandexUploader, file_ops, logger, speedtest
 from bot.states import DataStates
 from bot import keyboards
-from config import MAX_SIZE
+from config import MAX_SIZE, PAGE_SIZE
 
 router = Router()
 
 
-@router.callback_query(F.data == "traverse_up_directory")
-async def handle_traverse_up_directory(callback: CallbackQuery, state: FSMContext):
-    logger.logger_event_info(callback)
+def get_navigation_text(path: str, files: list, page_id: int) -> str:
+    space_line = "\u2500" * 24
+    header_text = f"<code>{path}</code>\n{space_line}"
 
+    if not files:
+        return f"{header_text}\n{space_line}\nНет файлов в директории\n"
+
+    file_pages = file_ops.chunk_list(files, PAGE_SIZE)
+    files_text_list = "\n".join(file_pages[page_id]) if file_pages else ""
+    start_index = page_id * PAGE_SIZE + 1
+    end_index = min((page_id + 1) * PAGE_SIZE, len(files))
+    page_indicator = f"Показаны файлы {start_index}-{end_index} из {len(files)}"
+    return f"{header_text}\n{files_text_list}\n{space_line}\n{page_indicator}"
+
+
+async def navigate_to_path(callback: CallbackQuery, state: FSMContext, path: str):
     try:
-        current_path = (await state.get_data()).get("path", "")
-
-        if current_path in ["D:\\", "C:\\"]:
-            await callback.answer()
-            return
-
-        # Получаем путь к родительской директории
-        next_path = os.path.abspath(os.path.join(current_path, "..")) + os.sep
-        await state.update_data(path=next_path)
-
-        # Запрашиваем файлы и папки в новом пути
-        files, folders = file_ops.get_directory_info(next_path)
-
-        await callback.message.edit_text(text=files, reply_markup=keyboards.files.next_directory(folders))
+        await state.update_data(path=path)
+        folders, files = file_ops.get_directory_info(path)
+        file_pages = file_ops.chunk_list(files, PAGE_SIZE)
+        pages_count = len(file_pages)
+        await state.update_data(pages_count=pages_count, page_id=0)
+        text = get_navigation_text(path, files, 0)
+        await callback.message.edit_text(text=text, reply_markup=keyboards.files.next_directory(folders, pages_count > 1))
         await callback.answer()
-
     except TelegramBadRequest as e:
+        if "message is not modified" in str(e):
+            await callback.answer(f"Message is not modified")
+            return
         logger.logger_error(e, exc_info=True)
         await callback.message.answer(f"<blockquote>{e}</blockquote>")
+    except (PermissionError, FileNotFoundError) as e:
+        logger.logger_error(e, exc_info=True)
+        await callback.message.answer(f"<blockquote>{e}</blockquote>")
+
+
+@router.callback_query(F.data == "traverse_up_directory")
+async def handle_traverse_up_directory(callback: CallbackQuery, state: FSMContext):
+    current_path = (await state.get_data()).get("path", "")
+    if current_path in ["D:\\", "C:\\"]:
+        await callback.answer()
+        return
+    next_path = os.path.abspath(os.path.join(current_path, "..")) + os.sep
+    await navigate_to_path(callback, state, next_path)
 
 
 @router.callback_query(F.data.in_({"D:\\", "C:\\"}))
 async def handle_traverse_up_to_disk(callback: CallbackQuery, state: FSMContext):
-    logger.logger_event_info(callback)
-
-    try:
-        disk = callback.data
-        await state.update_data(path=disk)
-
-        # Запрашиваем файлы и папки на выбранном диске
-        files, folders = file_ops.get_directory_info(disk)
-
-        await callback.message.edit_text(text=files, reply_markup=keyboards.files.next_directory(folders))
-        await callback.answer()
-
-    except TelegramBadRequest as e:
-        logger.logger_error(e, exc_info=True)
-        await callback.message.answer(f"<blockquote>{e}</blockquote>")
+    await navigate_to_path(callback, state, callback.data)
 
 
 @router.callback_query(F.data.endswith(os.sep))
-async def handle_traverse_up_directory(callback: CallbackQuery, state: FSMContext):
-    logger.logger_event_info(callback)
-
-    # Получаем текущий путь из состояния FSM
+async def handle_traverse_directory(callback: CallbackQuery, state: FSMContext):
     current_path = (await state.get_data()).get("path", "")
-    # Обновляем путь в состоянии FSM, добавляя выбранную папку
-    next_path = current_path + callback.data
-    await state.update_data(path=next_path)
+    next_path = os.path.join(current_path, callback.data)
+    await navigate_to_path(callback, state, next_path)
 
-    try:
-        # Запрашиваем файлы и папки в новом пути
-        files, folders = file_ops.get_directory_info(next_path)
 
-        await callback.message.edit_text(text=files, reply_markup=keyboards.files.next_directory(folders))
-        await callback.answer()
-    except (TelegramBadRequest, PermissionError, FileNotFoundError) as e:
-        await state.update_data(path=current_path)
-        logger.logger_error(e, exc_info=True)
-        await callback.message.answer(f"<blockquote>{e}</blockquote>")
+@router.callback_query(F.data.in_({"next_page", "prev_page"}))
+async def navigate_pages_handler(callback: CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+    current_path, page_id, pages_count = data.get("path", ""), data.get("page_id", 0), data.get("pages_count", 1)
+    folders, files = file_ops.get_directory_info(current_path)
+    file_pages = file_ops.chunk_list(files, PAGE_SIZE)
+    page_id = (page_id + 1) % pages_count if callback.data == "next_page" else (page_id - 1) % pages_count
+    await state.update_data(page_id=page_id)
+    text = get_navigation_text(current_path, files, page_id)
+    await callback.message.edit_text(text=text, reply_markup=keyboards.files.next_directory(folders, True))
 
 
 @router.message(DataStates.path)

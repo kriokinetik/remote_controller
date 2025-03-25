@@ -2,7 +2,7 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from bot import buttons
 
 
-def next_directory(folders: list) -> InlineKeyboardMarkup:
+def next_directory(folders: list[str], pages: bool = False) -> InlineKeyboardMarkup:
     """
     Формирует клавиатуру при перемещении из одной директории в другую.
 
@@ -13,6 +13,9 @@ def next_directory(folders: list) -> InlineKeyboardMarkup:
 
     keyboard = []
 
+    if pages:
+        keyboard.append([buttons.files.prev_page, buttons.files.next_page])
+
     # Добавляем кнопки для каждой папки в текущей директории
     for folder_name in folders:
         # Если имя папки длиннее 30 символов, обрезаем его для отображения на кнопке
@@ -21,6 +24,7 @@ def next_directory(folders: list) -> InlineKeyboardMarkup:
 
     keyboard.append(
         [buttons.files.parent_directory,
+         buttons.files.desktop,
          buttons.files.disk_C,
          buttons.files.disk_D]
     )

@@ -5,9 +5,11 @@ from aiogram.types import Message, CallbackQuery, BufferedInputFile
 
 import tools
 from tools.logger import logger_event_info
-from bot import keyboards, states
+from bot import keyboards
+from bot.states import DataStates
+from bot.handlers.subhandlers.files import navigate_to_path
 from bot.filters import BotAccessFilter
-from config import SCREENSHOT_NAME
+from config import SCREENSHOT_NAME, PAGE_SIZE
 
 router = Router()
 
@@ -68,15 +70,11 @@ async def send_main_window_handler(callback: CallbackQuery, state: FSMContext):
 async def retrieve_file_menu_handler(callback: CallbackQuery, state: FSMContext):
     logger_event_info(callback)
 
-    # Получение пути к рабочему столу и обновление данных в состоянии
-    data = await state.update_data(path=tools.file_ops.get_desktop_path())
-
-    # Формирование клавиатуры и сообщения с файлами и папками
-    files, folders = tools.file_ops.get_directory_info(current_directory=data["path"])
-    await callback.message.edit_text(text=files, reply_markup=keyboards.files.next_directory(folders))
+    desktop_path = tools.file_ops.get_desktop_path()
+    await navigate_to_path(callback, state, desktop_path)
 
     # Установка состояния ожидания сообщения с путем к файлу
-    await state.set_state(states.DataStates.path)
+    await state.set_state(DataStates.path)
 
     # Отправка ответа пользователю
     await callback.answer("")

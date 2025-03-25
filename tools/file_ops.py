@@ -1,5 +1,6 @@
 import os
 import shutil
+from config import PAGE_SIZE
 
 
 def is_hidden_file(file_path: str) -> bool:
@@ -55,6 +56,10 @@ def sort_documents_in_directory(directory_path: str) -> (list[str], list[str]):
     return sorted(folders), sorted(files)
 
 
+def chunk_list(lst, chunk_size):
+    return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
+
+
 def get_directory_info(current_directory: str) -> (list[str], list[str]):
     """
     Возвращает список документов и папок в текущей директории.
@@ -64,13 +69,8 @@ def get_directory_info(current_directory: str) -> (list[str], list[str]):
     """
 
     folders, files = sort_documents_in_directory(current_directory)
-    documents_text = "\n".join(files)
-    space_line = "────────────────────────"
-    result_text = f"<code>{current_directory}</code>\n"\
-                  f"{space_line}\n"\
-                  f"{documents_text}"
 
-    return result_text, files
+    return folders, files
 
 
 def get_desktop_path() -> str:
