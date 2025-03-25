@@ -1,6 +1,6 @@
 import os
 import shutil
-from config import PAGE_SIZE
+from config import MISC_FOLDER
 
 
 def is_hidden_file(file_path: str) -> bool:
@@ -113,7 +113,7 @@ def compress_folder_to_zip(folder_path: str) -> str:
     """
 
     _, folder_name = folder_path[:-1].rsplit("/", maxsplit=1)
-    archive_folder_path = f"./misc/{folder_name}"
+    archive_folder_path = f"{MISC_FOLDER}/{folder_name}"
 
     if not os.path.exists(f"{archive_folder_path}.zip"):
         shutil.make_archive(archive_folder_path, "zip", folder_path)
@@ -122,4 +122,18 @@ def compress_folder_to_zip(folder_path: str) -> str:
 
 
 def get_archive_folder_path(folder_name):
-    return f"./misc/{folder_name}.zip"
+    return f"{MISC_FOLDER}/{folder_name}.zip"
+
+
+def clear_misc_folder():
+    if os.path.exists(MISC_FOLDER):
+        # Удаляем все содержимое папки
+        for filename in os.listdir(MISC_FOLDER):
+            file_path = os.path.join(MISC_FOLDER, filename)
+            try:
+                if os.path.isdir(file_path):
+                    shutil.rmtree(file_path)  # Удаляем папки
+                else:
+                    os.remove(file_path)  # Удаляем файлы
+            except Exception as e:
+                print(f"Error while deleting {file_path}: {e}")
