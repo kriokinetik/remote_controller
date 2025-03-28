@@ -25,22 +25,17 @@ async def measure_speed(mode: str = "download", pretty: bool = False) -> str | f
         raise ValueError(f"HTTP Error 403: Forbidden. Details: {str(e)}")
 
     if mode == "download":
-        result = await loop.run_in_executor(None, st.upload)
-    elif mode == "upload":
         result = await loop.run_in_executor(None, st.download)
+    elif mode == "upload":
+        result = await loop.run_in_executor(None, st.upload)
     else:
         raise ValueError("Invalid mode. Use 'download' or 'upload'.")
-
-    result /= 8
 
     return humansize(result, True) if pretty else result
 
 
-def speed_test() -> (str, str):
-    st = speedtest.Speedtest(secure=True)
-    st.get_best_server()
-    st.download()
-    st.upload()
-    results = st.results.dict()
+async def speed_test() -> (str, str):
+    download = await measure_speed("download", True)
+    upload = await measure_speed("upload", True)
 
-    return humansize(results["download"]), humansize(results["upload"])
+    return download, upload

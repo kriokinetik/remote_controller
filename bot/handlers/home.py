@@ -1,10 +1,11 @@
+import asyncio
 from aiogram import Router, F
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, BufferedInputFile
 
 import tools
-from tools.logger import logger_event_info
+from tools.logger import logger_event_info, logger_error
 from bot import keyboards
 from bot.states import DataStates
 from bot.handlers.subhandlers.files import navigate_to_path
@@ -79,19 +80,24 @@ async def retrieve_file_menu_handler(callback: CallbackQuery, state: FSMContext)
     # Отправка ответа пользователю
     await callback.answer("")
 
+async def run_speedtest(message: Message):
+    try:
+        download, upload = await tools.speedtest.speed_test()
+        await message.edit_text(f"🌐 Internet Speed Test Results\n\n"
+                                f"⬇️ <code>Download: {download}ps</code>\n"
+                                f"⬆️ <code>Upload: {upload}ps</code>")
+    except Exception as e:
+        await message.edit_text(f"❌ Speed test failed: {e}")
+        logger_error(e, exc_info=True)
 
 # Обработчик для измерения скорости интернета
 @router.callback_query(F.data == "speed_test")
 async def send_speed_test_handler(callback: CallbackQuery):
     logger_event_info(callback)
 
-    # Получение пути к рабочему столу и обновление данных в состоянии
-    msg = await callback.message.answer(text="Speedtest запущен...")
-    # Отправка ответа пользователю
-    await callback.answer("")
+    message = await callback.message.answer("🔄 Running Internet Speed Test...")
+    await callback.answer()
 
-    download, upload = tools.speedtest.speed_test()
+    asyncio.create_task(run_speedtest(message))
 
-    await msg.edit_text(text=f"Download: {download}\n"
-                             f"Upload: {upload}"
-                        )
+    await callback.answer("Uploading...")
