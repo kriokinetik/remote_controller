@@ -56,7 +56,14 @@ async def handle_traverse_up_directory(callback: CallbackQuery, state: FSMContex
     if current_path in ["D:\\", "C:\\"]:
         await callback.answer()
         return
-    next_path = os.path.abspath(os.path.join(current_path, "..")) + os.sep
+
+    next_path = os.path.abspath(os.path.join(current_path, ".."))
+
+    if len(next_path) > 3:
+        next_path += os.sep
+
+    logger.logger_info(f"Current path: '{current_path}', next path: '{next_path}'")
+
     await navigate_to_path(callback, state, next_path)
 
 
