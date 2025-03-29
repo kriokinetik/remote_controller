@@ -12,85 +12,49 @@ from config import SCREENSHOT_NAME
 router = Router()
 
 
-# Обработчик для кнопки "Левый клик"
-@router.callback_query(F.data == "mouse_left")
-async def mouse_left_click_handler(callback: CallbackQuery):
+# Обработчик для кнопок мыши
+@router.callback_query(F.data.in_({"mouse_right", "mouse_left"}))
+async def mouse_button_click_handler(callback: CallbackQuery):
     logger_event_info(callback)
 
-    pyautogui.click(button="left")
-    await callback.answer("Левая кнопка мыши нажата")
+    buttons = {
+        "right": "Right",
+        "left": "Left"
+    }
+
+    button = callback.data.split("_")[1]
+
+    pyautogui.click(button=button)
+    await callback.answer(f"🖱️ {buttons[button]}-click pressed")
 
 
-# Обработчик для кнопки "Правый клик"
-@router.callback_query(F.data == "mouse_right")
-async def clich_right_mouse_button_handler(callback: CallbackQuery):
+# Обработчик для стрелок
+@router.callback_query(F.data.in_({"move_right", "move_left", "move_up", "move_down"}))
+async def arrows_click_handler(callback: CallbackQuery):
     logger_event_info(callback)
 
-    pyautogui.click(button="right")
-    await callback.answer("Правая кнопка мыши нажата")
+    arrows = {
+        "right": "→ Right",
+        "left": "← Left",
+        "up": "↑ Up",
+        "down": "↓ Down"
+    }
+
+    arrow = callback.data.split("_")[1]
+
+    pyautogui.press(arrow)
+    await callback.answer(f"{arrows[arrow]} key pressed")
 
 
-# Обработчик для кнопки "Вверх"
-@router.callback_query(F.data == "move_up")
-async def up_click_handler(callback: CallbackQuery):
+# Обработчик для кнопок Space, Backspace, Enter
+@router.callback_query(F.data.in_({"press_space", "press_backspace", "press_enter"}))
+async def buttons_click_handler(callback: CallbackQuery):
     logger_event_info(callback)
 
-    pyautogui.press("up")
-    await callback.answer("Кнопка 'Up' нажата")
+    button = callback.data.split("_")[1]
 
-
-# Обработчик для кнопки "Вниз"
-@router.callback_query(F.data == "move_down")
-async def down_click_handler(callback: CallbackQuery):
-    logger_event_info(callback)
-
-    pyautogui.press("down")
-    await callback.answer("Кнопка 'Down' нажата")
-
-
-# Обработчик для кнопки "Влево"
-@router.callback_query(F.data == "move_left")
-async def left_click_handler(callback: CallbackQuery):
-    logger_event_info(callback)
-
-    pyautogui.press("left")
-    await callback.answer("Кнопка 'Left' нажата")
-
-
-# Обработчик для кнопки "Вправо"
-@router.callback_query(F.data == "move_right")
-async def right_click_handler(callback: CallbackQuery):
-    logger_event_info(callback)
-
-    pyautogui.press("right")
-    await callback.answer("Кнопка 'Right' нажата")
-
-
-# Обработчик для кнопки "Пробел"
-@router.callback_query(F.data == 'press_space')
-async def space_click_handler(callback: CallbackQuery):
-    logger_event_info(callback)
-
-    pyautogui.press("space")
-    await callback.answer("Кнопка 'Space' нажата")
-
-
-# Обработчик для кнопки "Backspace"
-@router.callback_query(F.data == "press_backspace")
-async def backspace_click_handler(callback: CallbackQuery):
-    logger_event_info(callback)
-
-    pyautogui.press("backspace")
-    await callback.answer("Кнопка 'Backspace' нажата")
-
-
-# Обработчик для кнопки "Enter"
-@router.callback_query(F.data == "press_enter")
-async def enter_click_handler(callback: CallbackQuery):
-    logger_event_info(callback)
-
-    pyautogui.press("enter")
-    await callback.answer("Кнопка 'Enter' нажата")
+    pyautogui.press(button)
+    await callback.answer(f"🕹️'{button}' key pressed")
 
 
 # Обработчик для кнопки "Свернуть все окна"
