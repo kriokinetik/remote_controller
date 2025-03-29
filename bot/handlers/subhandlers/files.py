@@ -31,13 +31,14 @@ def get_navigation_text(path: str, files: list, page_id: int) -> str:
 
 async def navigate_to_path(callback: CallbackQuery, state: FSMContext, path: str):
     try:
-        await state.update_data(path=path)
         folders, files = file_ops.get_directory_info(path)
         file_pages = file_ops.chunk_list(files, PAGE_SIZE)
         pages_count = len(file_pages)
         await state.update_data(pages_count=pages_count, page_id=0)
         text = get_navigation_text(path, files, 0)
-        await callback.message.edit_text(text=text, reply_markup=keyboards.files.next_directory(folders, pages_count > 1))
+        await callback.message.edit_text(text=text,
+                                         reply_markup=keyboards.files.next_directory(folders, pages_count > 1))
+        await state.update_data(path=path)
         await callback.answer()
     except TelegramBadRequest as e:
         if "message is not modified" in str(e):
