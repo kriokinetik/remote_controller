@@ -10,7 +10,7 @@ from bot import keyboards
 from bot.states import DataStates
 from bot.handlers.subhandlers.files import navigate_to_path
 from bot.filters import BotAccessFilter
-from config import SCREENSHOT_NAME, PAGE_SIZE
+from config import SCREENSHOT_NAME
 
 router = Router()
 
@@ -43,9 +43,9 @@ async def send_screenshot_handler(callback: CallbackQuery):
 async def send_input_controls_handler(callback: CallbackQuery, state: FSMContext):
     logger_event_info(callback)
 
-    await callback.message.edit_text(text="Клавиатура и мышь", reply_markup=keyboards.input.input_controls)
-    await callback.answer("")
     await callback.message.edit_text(text=f"Mouse & Keyboard",
+                                     reply_markup=keyboards.input.input_controls)
+    await callback.answer()
     if await state.get_state() is not None:
         await state.set_state(state=None)
 
@@ -55,8 +55,9 @@ async def send_input_controls_handler(callback: CallbackQuery, state: FSMContext
 async def send_main_window_handler(callback: CallbackQuery, state: FSMContext):
     logger_event_info(callback)
 
-    await callback.message.edit_text(text="remote controller", reply_markup=keyboards.home.main_keyboard)
-    await callback.answer("")
+    await callback.message.edit_text(text="remote controller",
+                                     reply_markup=keyboards.home.main_keyboard)
+    await callback.answer()
     if await state.get_state() is not None:
         await state.set_state(state=None)
 

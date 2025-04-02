@@ -95,7 +95,6 @@ async def navigate_pages_handler(callback: CallbackQuery, state: FSMContext):
 
     current_path, page_id, pages_count = data.get("path", ""), data.get("page_id", 0), data.get("pages_count", 1)
     folders, files = file_ops.get_directory_info(current_path)
-    file_pages = file_ops.chunk_list(files, PAGE_SIZE)
     page_id = (page_id + 1) % pages_count if callback.data == "next_page" else (page_id - 1) % pages_count
 
     await state.update_data(page_id=page_id)
