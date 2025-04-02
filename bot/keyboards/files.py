@@ -33,6 +33,7 @@ def next_directory(folders: list[str], pages: bool = False) -> InlineKeyboardMar
 
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
 
+
 def get_progress_keyboard(text: str, url: str = None) -> InlineKeyboardMarkup:
     if url:
         progress_button = [[InlineKeyboardButton(text=text, url=url)]]

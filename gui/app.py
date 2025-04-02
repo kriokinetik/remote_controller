@@ -8,6 +8,7 @@ from config import LOG_FILE
 def start_gui():
     app = QApplication(sys.argv)
     window = RemoteControllerWindow()
+
     file_handler = logging.FileHandler(filename=LOG_FILE, mode="w", encoding="utf-8")
     app_handler = TextHandler(window.log_output)
     logging.basicConfig(format="%(asctime)s [%(levelname)s] [%(name)s] %(message)s",

@@ -85,6 +85,7 @@ async def run_speedtest(message: Message):
         await message.edit_text(f"❌ Speed test failed: {e}")
         logger_error(e, exc_info=True)
 
+
 # Обработчик для измерения скорости интернета
 @router.callback_query(F.data == "speed_test")
 async def send_speed_test_handler(callback: CallbackQuery):
