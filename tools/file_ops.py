@@ -56,7 +56,7 @@ def sort_documents_in_directory(directory_path: str) -> (list[str], list[str]):
     return sorted(folders), sorted(files)
 
 
-def chunk_list(lst, chunk_size):
+def chunk_list(lst: list[str], chunk_size: int) -> list[list[str]]:
     return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
 
 
@@ -119,11 +119,17 @@ def compress_folder_to_zip(folder_path: str) -> str:
     return f"{archive_folder_path}.zip"
 
 
-def get_archive_folder_path(folder_name):
+def get_archive_folder_path(folder_name: str) -> str:
+    """
+    Возвращает путь к временному архиву.
+
+    :param folder_name: Название архивируемой папки.
+    :return: Путь к временному архиву
+    """
     return f"{MISC_FOLDER}/{folder_name}.zip"
 
 
-def clear_misc_folder():
+def clear_misc_folder() -> None:
     if os.path.exists(MISC_FOLDER):
         # Удаляем все содержимое папки
         for filename in os.listdir(MISC_FOLDER):

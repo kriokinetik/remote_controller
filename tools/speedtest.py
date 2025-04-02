@@ -2,7 +2,7 @@ import speedtest
 import asyncio
 
 
-def humansize(nbytes, pretty: bool = True):
+def humansize(nbytes: int, pretty: bool = True) -> str:
     suffixes = ["b", "Kb", "Mb", "Gb", "Tb", "Pb"]
     i = 0
     while nbytes >= 1024 and i < len(suffixes) - 1:
@@ -35,7 +35,7 @@ async def measure_speed(mode: str = "download", pretty: bool = False) -> str | f
 
 
 async def speed_test() -> (str, str):
-    download = await measure_speed("download", True)
-    upload = await measure_speed("upload", True)
+    download = await measure_speed(mode="download", pretty=True)
+    upload = await measure_speed(mode="upload", pretty=True)
 
     return download, upload

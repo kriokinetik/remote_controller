@@ -72,7 +72,8 @@ async def retrieve_file_menu_handler(callback: CallbackQuery, state: FSMContext)
     # Установка состояния ожидания сообщения с путем к файлу
     await state.set_state(DataStates.path)
 
-    await callback.answer("")
+    await callback.answer()
+
 
 async def run_speedtest(message: Message):
     try:

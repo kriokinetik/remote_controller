@@ -5,7 +5,7 @@ import win32ui
 from PIL import Image, ImageGrab
 
 
-def get_cursor_image():
+def get_cursor_image() -> (Image.Image, tuple[int, int]):
     """
     Получает изображение текущего курсора и его позицию hotspot.
 
