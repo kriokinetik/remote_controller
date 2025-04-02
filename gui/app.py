@@ -15,6 +15,5 @@ def start_gui():
                         level=logging.INFO,
                         handlers=[file_handler, app_handler])
     sys.stdout = TextHandler(window.log_output)
-    # window.show()
-    # window.hide_to_tray()
+
     sys.exit(app.exec())

@@ -39,7 +39,6 @@ async def cancel_system_control_handler(callback: CallbackQuery):
 async def confirm_system_control_handler(callback: CallbackQuery):
     logger_event_info(callback)
 
-    # В зависимости от выбора пользователя, выполняем перезагрузку или выключение
     match callback.data:
         case "confirm_restart":
             await callback.message.edit_text("💻 The computer is restarting.")

@@ -20,7 +20,6 @@ router = Router()
 async def send_remote_controller_handler(message: Message):
     logger_event_info(message)
 
-    # Отправка клавиатуры пользователю
     await message.answer(text="remote controller", reply_markup=keyboards.home.main_keyboard)
 
 
@@ -62,13 +61,6 @@ async def send_main_window_handler(callback: CallbackQuery, state: FSMContext):
         await state.set_state(state=None)
 
 
-# # Обработчик для запроса на отправку пульта управления играми
-# @router.callback_query(F.data == 'game_controls')
-# async def games_control_handler(callback: CallbackQuery):
-#     await callback.message.edit_text(text='Управление играми', reply_markup=keyboards.game_controls.game_controls)
-#     await callback.answer('')
-
-
 # Обработчик для отправки меню проводника
 @router.callback_query(F.data == "retrieve_file")
 async def retrieve_file_menu_handler(callback: CallbackQuery, state: FSMContext):
@@ -80,7 +72,6 @@ async def retrieve_file_menu_handler(callback: CallbackQuery, state: FSMContext)
     # Установка состояния ожидания сообщения с путем к файлу
     await state.set_state(DataStates.path)
 
-    # Отправка ответа пользователю
     await callback.answer("")
 
 async def run_speedtest(message: Message):

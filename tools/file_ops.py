@@ -25,7 +25,7 @@ def is_ignored_folders(folder_name: str) -> bool:
     """Проверяет, находится ли папка в игнор-листе."""
 
     ignored_folders = ["Documents and Settings", "ESD", "Intel", "MC12demo", "PerfLogs"]
-    ignored_prefixes = (".", "$", "Windows")  # Список игнорируемых папок
+    ignored_prefixes = (".", "$", "Windows")
     return folder_name.startswith(ignored_prefixes) or folder_name in ignored_folders
 
 
@@ -92,11 +92,9 @@ def get_file_or_directory_size(path: str) -> int:
     """
 
     if os.path.isfile(path):
-        # Если путь указывает на файл, возвращаем его размер
         return os.path.getsize(path)
     else:
         size = 0
-        # Если путь указывает на директорию, рекурсивно считаем размер всех файлов в ней
         for folder_path, dirs, files in os.walk(path):
             for file in files:
                 file_path = os.path.join(folder_path, file)
