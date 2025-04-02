@@ -3,7 +3,7 @@ from aiogram.types import InlineKeyboardButton
 # Кнопка для перехода в родительский каталог
 parent_directory = InlineKeyboardButton(text="⬅", callback_data="traverse_up_directory")
 
-desktop = InlineKeyboardButton(text="~\\", callback_data="retrieve_file")
+desktop = InlineKeyboardButton(text="🖥", callback_data="retrieve_file")
 
 # Кнопка для перехода на диск C:
 disk_C = InlineKeyboardButton(text="C:\\", callback_data="C:\\")

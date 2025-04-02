@@ -24,15 +24,14 @@ async def system_control_handler(message: Message):
         case "/shutdown":
             confirmation_keyboard = keyboards.system.shutdown_confirmation
 
-    await message.reply(text="Вы уверены?", reply_markup=confirmation_keyboard)
+    await message.reply("❗ Are you sure?", reply_markup=confirmation_keyboard)
 
 
 # Обработчик для отмены запроса перезагрузки или выключения
 @router.callback_query(F.data.in_({"cancel_restart", "cancel_shutdown"}))
 async def cancel_system_control_handler(callback: CallbackQuery):
     logger_event_info(callback)
-
-    await callback.message.edit_text(text="Отменено.")
+    await callback.message.edit_text("❌ Canceled.")
 
 
 # Обработчик подтверждения перезагрузки или выключения
@@ -43,8 +42,8 @@ async def confirm_system_control_handler(callback: CallbackQuery):
     # В зависимости от выбора пользователя, выполняем перезагрузку или выключение
     match callback.data:
         case "confirm_restart":
-            await callback.message.edit_text("Компьютер перезагружается.")
+            await callback.message.edit_text("💻 The computer is restarting.")
             os.system("shutdown -r -t 0")  # Перезагрузка компьютера
         case "confirm_shutdown":
-            await callback.message.edit_text("Компьютер выключается.")
+            await callback.message.edit_text("💻 The computer is shutting down.")
             os.system("shutdown /p /f")  # Выключение компьютера

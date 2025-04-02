@@ -15,11 +15,10 @@ router = Router()
 
 
 def get_navigation_text(path: str, files: list, page_id: int) -> str:
-    space_line = "\u2500" * 24
-    header_text = f"<code>{path}</code>\n{space_line}"
+    header_text = f"🎯 <code>{path}</code>"
 
     if not files:
-        return f"{header_text}\n{space_line}\nНет файлов в директории\n"
+        return f"{header_text}\n\n<i>📎 No files in the directory</i>\n"
 
     file_pages = file_ops.chunk_list(files, PAGE_SIZE)
     files_text_list = "\n".join(file_pages[page_id]) if file_pages else ""
@@ -27,6 +26,7 @@ def get_navigation_text(path: str, files: list, page_id: int) -> str:
     end_index = min((page_id + 1) * PAGE_SIZE, len(files))
     page_indicator = f"Показаны файлы {start_index}-{end_index} из {len(files)}"
     return f"{header_text}\n{files_text_list}\n{space_line}\n{page_indicator}"
+    page_indicator = f"📎 <i>Showing files {start_index}-{end_index} of {len(files)}</i>"
 
 
 async def navigate_to_path(callback: CallbackQuery, state: FSMContext, path: str):
@@ -104,27 +104,29 @@ async def handle_send_document(message: Message):
             _, filename = path.rsplit("/", maxsplit=1)
             is_file = True
         elif os.path.isdir(path):
-            await message.reply(f"Архивируется...")
+            await message.reply("🔄 Archiving..")
             path = file_ops.compress_folder_to_zip(path)
             _, filename = path.rsplit("/", maxsplit=1)
             filesize = os.path.getsize(path)
             is_file = False
         else:
-            await message.reply("Указанный путь не существует или не является доступным файлом/папкой")
+            await message.reply("❌ The specified path does not exist or is not an accessible file/folder")
             return
 
         if filesize < MAX_SIZE:
-            await message.reply(f"Файл <code>{filename}</code> загружается...\n")
+            await message.reply(f"🔄 File <code>{filename}</code> is uploading...\n")
             await message.reply_document(document=FSInputFile(path=path))
         else:
             internet_speed_task = asyncio.create_task(speedtest.measure_speed("upload", False))
 
             rounded_filesize = speedtest.humansize(filesize)
 
-            download_message = await message.reply(f"Файл <code>{filename}</code> загружается на Яндекс.Диск...\n"
-                                                   f"Размер файла: <code>{rounded_filesize}</code>\n"
-                                                   f"Время ожидания: —",
-                                                   reply_markup=keyboards.files.get_progress_keyboard("..."))
+            download_message = await message.reply(
+                f"🔄 File <code>{filename}</code> is uploading to Yandex.Disk...\n"
+                f"📏 Size: <code>{rounded_filesize}</code>\n"
+                f"⏳ Estimated time: —",
+                reply_markup=keyboards.files.get_progress_keyboard("...")
+            )
 
             yandex_uploader = YandexUploader(path, filesize, download_message)
 
@@ -142,11 +144,11 @@ async def handle_send_document(message: Message):
                     estimated_time = "N/A"
                     logger.logger_error(e)
 
-                download_message = await download_message.edit_text(f"Файл: <code>{filename}</code>\n"
-                                                                    f"Размер файла: <code>{rounded_filesize}</code>\n"
-                                                                    f"Время ожидания: {estimated_time}",
-                                                                    reply_markup=download_message.reply_markup
-                                                                    )
+                download_message = await download_message.edit_text(
+                    f"📂 File: <code>{filename}</code> is uploading to Yandex.Disk...\n"
+                    f"📏 Size: <code>{rounded_filesize}</code>\n"
+                    f"⏳ Estimated time: {estimated_time}",
+                    reply_markup=download_message.reply_markup)
 
                 yandex_uploader.message = download_message
 
@@ -155,10 +157,10 @@ async def handle_send_document(message: Message):
 
             download_link = await yandex_uploader.get_yandex_link()
             logger.logger_info(f"File '{path}' (size: {filesize} bytes) has been successfully uploaded to Yandex Disk")
-            await download_message.edit_text(f"Файл: <code>{filename}</code>\n"
-                                             f"Размер файла: <code>{rounded_filesize}</code>",
+            await download_message.edit_text(f"📂 File: <code>{filename}</code>\n"
+                                             f"📏 Size: <code>{rounded_filesize}</code>",
                                              reply_markup=keyboards.files.get_progress_keyboard(
-                                                 "Скачать файл...", download_link)
+                                                 "⬇️ Download file...", download_link)
                                              )
         if not is_file:
             os.remove(path)

@@ -63,7 +63,7 @@ async def minimize_windows_handler(callback: CallbackQuery):
     logger_event_info(callback)
 
     pyautogui.hotkey("win", "m")
-    await callback.answer(text="Окна успешно свернуты")
+    await callback.answer("Windows successfully minimized")
 
 
 # Обработчик для запроса координат мыши
@@ -73,9 +73,10 @@ async def request_coordinates_handler(callback: CallbackQuery, state: FSMContext
 
     bound_x, bound_y = pyautogui.size()
     await callback.message.edit_text(
-        text=f"Ожидание координат (x, y)\n"
-             f"x ∈ [0, {bound_x - 1}]\n"
-             f"y ∈ [0, {bound_y - 1}]",
+        text=f"📍 Enter cursor coordinates\n"
+             f"↔️ <code>X: 0 — {bound_x - 1}</code>\n"
+             f"↕️ <code>Y: 0 — {bound_y - 1}</code>\n\n"
+             f"<i>Send coordinates in format:</i> <code>x y</code>\n",
         reply_markup=keyboards.input.to_input_controls
     )
     await state.set_state(DataStates.coordinates)
@@ -94,10 +95,10 @@ async def replace_mouse_handler(message: Message):
             with tools.screenshot.overlay_cursor_on_screenshot(True) as image:
                 image.seek(0)
                 await message.answer_document(
-                    caption=f"Курсор мыши перемещен в ({x}, {y})",
+                    caption=f"📍 Cursor moved to ({x}, {y})",
                     document=BufferedInputFile(file=image.read(), filename=SCREENSHOT_NAME)
                 )
         else:
-            await message.answer("Координаты вне допустимого диапазона")
+            await message.reply("❌ Coordinates out of range")
     except (ValueError, IndexError):
-        await message.answer("Некорректный формат координат")
+        await message.reply("❌ Incorrect coordinate format")

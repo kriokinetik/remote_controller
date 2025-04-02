@@ -1,8 +1,8 @@
 from aiogram.types import InlineKeyboardButton
 
 # Кнопки для управления мышью
-mouse_left = InlineKeyboardButton(text="Левый клик", callback_data="mouse_left")
-mouse_right = InlineKeyboardButton(text="Правый клик", callback_data="mouse_right")
+mouse_left = InlineKeyboardButton(text="Left Click", callback_data="mouse_left")
+mouse_right = InlineKeyboardButton(text="Right Click", callback_data="mouse_right")
 
 # Кнопки для перемещения
 up = InlineKeyboardButton(text="↑", callback_data="move_up")
@@ -16,7 +16,7 @@ backspace = InlineKeyboardButton(text="Backspace", callback_data="press_backspac
 enter = InlineKeyboardButton(text="Enter", callback_data="press_enter")
 
 # Дополнительные кнопки
-replace_mouse = InlineKeyboardButton(text="Переключить на мышь", callback_data="replace_mouse")
+replace_mouse = InlineKeyboardButton(text="🖱️ Move cursor", callback_data="replace_mouse")
 
 # Кнопка для сворачивания всех окон
-minimize = InlineKeyboardButton(text="Свернуть все окна", callback_data="minimize")
+minimize = InlineKeyboardButton(text="🖥️ Minimize all windows", callback_data="minimize")

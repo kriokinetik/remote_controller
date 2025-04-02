@@ -32,9 +32,11 @@ async def send_screenshot_handler(callback: CallbackQuery):
     with tools.screenshot.overlay_cursor_on_screenshot(False) as image:
         image.seek(0)
         await callback.message.answer_document(document=BufferedInputFile(file=image.read(),
-                                                                          filename=SCREENSHOT_NAME))
+                                                                          filename=SCREENSHOT_NAME),
+                                               caption="🖼 Screenshot captured",
+                                               disable_content_type_detection=True)
 
-    await callback.answer("Снимок экрана сделан")
+    await callback.answer()
 
 
 # Обработчик для запроса на отправку пульта управления клавиатурой и мышью
@@ -44,6 +46,7 @@ async def send_input_controls_handler(callback: CallbackQuery, state: FSMContext
 
     await callback.message.edit_text(text="Клавиатура и мышь", reply_markup=keyboards.input.input_controls)
     await callback.answer("")
+    await callback.message.edit_text(text=f"Mouse & Keyboard",
     if await state.get_state() is not None:
         await state.set_state(state=None)
 
