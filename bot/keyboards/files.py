@@ -21,8 +21,8 @@ def next_directory(folders: list[str], pages: bool = False) -> InlineKeyboardMar
 
     # Добавляем кнопки для каждой папки в текущей директории
     for folder_name in folders:
-        # Если имя папки длиннее 30 символов, обрезаем его для отображения на кнопке
-        displayed_name = f"{folder_name[:30]}...\\" if len(folder_name) > 30 else folder_name
+        # Если имя папки длиннее 24 символов, обрезаем его для отображения на кнопке
+        displayed_name = f"📁 {folder_name[:24]}...\\" if len(folder_name) > 24 else f"📁 {folder_name}"
         keyboard.append([InlineKeyboardButton(text=displayed_name, callback_data=folder_name)])
 
     keyboard.append([
