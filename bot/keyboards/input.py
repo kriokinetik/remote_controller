@@ -8,13 +8,8 @@ input_controls = InlineKeyboardMarkup(
         [buttons.input.left, buttons.input.down, buttons.input.right],
         [buttons.input.space, buttons.input.backspace, buttons.input.enter],
         [buttons.input.replace_mouse],
-        [buttons.input.minimize],
-        [buttons.home.main_button]
+        [buttons.input.minimize]
     ]
 )
 
-to_input_controls = InlineKeyboardMarkup(
-    inline_keyboard=[
-        [buttons.home.input_controls]
-    ]
-)
+to_input_controls = InlineKeyboardMarkup(inline_keyboard=[[buttons.home.input_controls]])
