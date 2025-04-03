@@ -2,6 +2,7 @@ import aiohttp
 import aiofiles
 import yadisk
 import asyncio
+import os
 import time
 import hashlib
 from aiogram.types import Message
@@ -20,7 +21,7 @@ class YandexUploader:
         self.message = message
         self.upload_speed = upload_speed
 
-        self.file_basename = path.rsplit("/", maxsplit=1)[1]
+        self.file_basename = path.rsplit(os.sep, maxsplit=1)[1]
         self.filename, self.extension = self.file_basename.rsplit(".", maxsplit=1)
 
         self.yandex_dst_path = f"/{YANDEX_FOLDER}/{self.filename}.some_other_extension"
