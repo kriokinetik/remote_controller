@@ -7,8 +7,6 @@ from aiogram.types import Message, CallbackQuery, BufferedInputFile
 import tools
 from tools.logger import logger_event_info, logger_error
 from bot import keyboards
-from bot.states import DataStates
-from bot.handlers.subhandlers.files import navigate_to_path
 from bot.filters import BotAccessFilter
 from config import SCREENSHOT_NAME
 
@@ -60,20 +58,6 @@ async def send_main_window_handler(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
     if await state.get_state() is not None:
         await state.set_state(state=None)
-
-
-# Обработчик для отправки меню проводника
-@router.callback_query(F.data == "retrieve_file")
-async def retrieve_file_menu_handler(callback: CallbackQuery, state: FSMContext):
-    logger_event_info(callback)
-
-    desktop_path = tools.file_ops.get_desktop_path()
-    await navigate_to_path(callback, state, desktop_path)
-
-    # Установка состояния ожидания сообщения с путем к файлу
-    await state.set_state(DataStates.path)
-
-    await callback.answer()
 
 
 async def run_speedtest(message: Message):

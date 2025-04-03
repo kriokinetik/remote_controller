@@ -2,37 +2,24 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from bot import buttons
 
 
-def next_directory(folders: list[str], pages: bool = False) -> InlineKeyboardMarkup:
+def get_files_manager_keyboard(mode: str, pages: bool = False) -> InlineKeyboardMarkup:
     """
     Формирует клавиатуру при перемещении из одной директории в другую.
 
-    :param folders: Список имен папок в текущей директории.
     :param pages: Если у директории слишком много файлов len(message) > 4096
+    :param mode: Текущий режим вывода (папки/файлы).
     :return: InlineKeyboardMarkup с кнопками для перехода в следующую директорию.
     """
 
     keyboard = []
 
     if pages:
-        keyboard.append([
-            buttons.files.prev_page,
-            buttons.files.next_page
-        ])
+        keyboard.append([buttons.files.prev_page, buttons.files.next_page])
 
-    # Добавляем кнопки для каждой папки в текущей директории
-    for folder_name in folders:
-        # Если имя папки длиннее 24 символов, обрезаем его для отображения на кнопке
-        displayed_name = f"📁 {folder_name[:24]}...\\" if len(folder_name) > 24 else f"📁 {folder_name}"
-        keyboard.append([InlineKeyboardButton(text=displayed_name, callback_data=folder_name)])
-
-    keyboard.append([
-        buttons.files.parent_directory,
-        buttons.files.desktop,
-        buttons.files.disk_C,
-        buttons.files.disk_D
-    ])
-
-    keyboard.append([buttons.home.main_button])
+    if mode == "folder":
+        keyboard.append([buttons.files.show_files])
+    elif mode == "file":
+        keyboard.append([buttons.files.show_folders])
 
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
 

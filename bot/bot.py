@@ -17,8 +17,10 @@ class TelegramBot:
     async def set_commands(self):
         await self.bot.set_my_commands(
             [
-                BotCommand(command="restart", description="Restart PC"),
-                BotCommand(command="shutdown", description="Shutdown PC")
+                BotCommand(command="restart", description="Restart the computer"),
+                BotCommand(command="shutdown", description="Shutdown the computer"),
+                BotCommand(command="cd", description="Navigate to a specified directory"),
+                BotCommand(command="sendfile", description="Send a file")
             ]
         )
 

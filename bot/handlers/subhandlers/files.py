@@ -2,131 +2,153 @@ import asyncio
 import os
 import time
 from aiogram import Router, F
+from aiogram.filters import CommandObject, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, FSInputFile
 from aiogram.exceptions import TelegramBadRequest
+from aiogram.utils.keyboard import repeat_last
 
+import tools.file_ops
 from tools import YandexUploader, file_ops, logger, speedtest
-from bot.states import DataStates
+from bot.filters import BotAccessFilter
 from bot import keyboards
 from config import MAX_SIZE, PAGE_SIZE
 
 router = Router()
 
 
-def get_navigation_text(path: str, files: list, page_id: int) -> str:
-    header_text = f"🎯 <code>{path}</code>"
+def get_navigation_text(path: str, items: list, page_id: int, mode: str) -> str:
+    emoji = "📁" if mode == "folder" else "🔖" # 🎯
+    header_text = f"{emoji} <code>{path}</code>"
 
-    if not files:
-        return f"{header_text}\n\n<i>📎 No files in the directory</i>\n"
+    if not items:
+        return f"{header_text}\n\n<i>📎 No {mode}s in the directory</i>\n"
 
-    file_pages = file_ops.chunk_list(files, PAGE_SIZE)
-    files_text_list = "\n".join(file_pages[page_id]) if file_pages else ""
+    item_pages = file_ops.chunk_list(items, PAGE_SIZE)
+    items_text_list = "\n".join(item_pages[page_id]) if item_pages else ""
 
     start_index = page_id * PAGE_SIZE + 1
-    end_index = min((page_id + 1) * PAGE_SIZE, len(files))
+    end_index = min((page_id + 1) * PAGE_SIZE, len(items))
 
-    page_indicator = f"📎 <i>Showing files {start_index}-{end_index} of {len(files)}</i>"
+    page_indicator = f"📎 <i>Showing {mode}s {start_index}-{end_index} of {len(items)}</i>"
 
-    return f"{header_text}\n\n{files_text_list}\n\n{page_indicator}"
+    return f"{header_text}\n\n{items_text_list}\n\n{page_indicator}"
 
 
-async def navigate_to_path(callback: CallbackQuery, state: FSMContext, path: str):
+async def navigate_to_path(message, state: FSMContext, edit: bool = False):
     try:
+        mode = (await state.get_data()).get("mode", "folder")
+        path = (await state.get_data()).get("path")
+
         folders, files = file_ops.get_directory_info(path)
-        file_pages = file_ops.chunk_list(files, PAGE_SIZE)
-        pages_count = len(file_pages)
+        items = folders if mode == "folder" else files
+        item_pages = file_ops.chunk_list(items, PAGE_SIZE)
+        pages_count = len(item_pages)
 
         await state.update_data(pages_count=pages_count, page_id=0)
-        text = get_navigation_text(path, files, 0)
+        text = get_navigation_text(path, items, page_id=0, mode=mode)
 
-        await callback.message.edit_text(text=text,
-                                         reply_markup=keyboards.files.next_directory(folders, pages_count > 1))
-
-        await state.update_data(path=path)
-        await callback.answer()
+        if edit:
+            await message.edit_text(text=text,
+                                 reply_markup=keyboards.files.get_files_manager_keyboard(mode, pages=pages_count > 1))
+        else:
+            await message.answer(text=text,
+                                    reply_markup=keyboards.files.get_files_manager_keyboard(mode, pages=pages_count > 1))
 
     except TelegramBadRequest as e:
         if "message is not modified" in str(e):
-            await callback.answer(f"Message is not modified")
+            await message.answer(f"Message is not modified")
             return
 
         logger.logger_error(e, exc_info=True)
-        await callback.message.answer(f"<blockquote>{e}</blockquote>")
+        await message.answer(f"<blockquote>{e}</blockquote>")
 
     except (PermissionError, FileNotFoundError) as e:
         logger.logger_error(e, exc_info=True)
-        await callback.message.answer(f"<blockquote>{e}</blockquote>")
+        await message.answer(f"<blockquote>{e}</blockquote>")
 
 
-@router.callback_query(F.data == "traverse_up_directory")
-async def handle_traverse_up_directory(callback: CallbackQuery, state: FSMContext):
+@router.message(Command("cd"), BotAccessFilter())
+async def cd_handler(message: Message, command: CommandObject, state: FSMContext):
     current_path = (await state.get_data()).get("path", "")
+    relative_path = command.args if command.args is not None else tools.file_ops.get_desktop_path()
 
-    if current_path in ["D:\\", "C:\\"]:
-        await callback.answer()
+    if relative_path[1] == ":" and len(relative_path) <= 3:
+        if len(relative_path) == 2:
+            relative_path += os.sep
+
+        if relative_path not in file_ops.get_drives():
+            await message.reply("❌ Cannot find the drive specified")
+            return
+
+    next_path = os.path.abspath(os.path.join(current_path, relative_path))
+
+    if not os.path.exists(next_path):
+        await message.reply("❌ Cannot find the path specified.")
         return
 
-    next_path = os.path.abspath(os.path.join(current_path, ".."))
-
-    if len(next_path) > 3:
-        next_path += os.sep
-
-    logger.logger_info(f"Current path: '{current_path}', next path: '{next_path}'")
-
-    await navigate_to_path(callback, state, next_path)
+    await state.update_data(path=next_path, mode="folder")
+    await navigate_to_path(message, state)
 
 
-@router.callback_query(F.data.in_({"D:\\", "C:\\"}))
-async def handle_traverse_up_to_disk(callback: CallbackQuery, state: FSMContext):
-    await navigate_to_path(callback, state, callback.data)
-
-
-@router.callback_query(F.data.endswith(os.sep))
-async def handle_traverse_directory(callback: CallbackQuery, state: FSMContext):
-    current_path = (await state.get_data()).get("path", "")
-    next_path = os.path.join(current_path, callback.data)
-    await navigate_to_path(callback, state, next_path)
+@router.callback_query(F.data.in_({"show_folder", "show_file"}))
+async def switch_files_folders_handler(callback: CallbackQuery, state: FSMContext):
+    mode = callback.data.split("_")[1]
+    await state.update_data(mode=mode)
+    await navigate_to_path(callback.message, state, edit=True)
 
 
 @router.callback_query(F.data.in_({"next_page", "prev_page"}))
 async def navigate_pages_handler(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
 
-    current_path, page_id, pages_count = data.get("path", ""), data.get("page_id", 0), data.get("pages_count", 1)
+    current_path = data.get("path", "")
+    page_id = data.get("page_id", 0)
+    pages_count = data.get("pages_count", 1)
+    mode = data.get("mode", "folder")
     folders, files = file_ops.get_directory_info(current_path)
+    items = folders if mode == "folder" else files
     page_id = (page_id + 1) % pages_count if callback.data == "next_page" else (page_id - 1) % pages_count
 
     await state.update_data(page_id=page_id)
-    text = get_navigation_text(current_path, files, page_id)
+    text = get_navigation_text(current_path, items, page_id, mode)
 
-    await callback.message.edit_text(text=text, reply_markup=keyboards.files.next_directory(folders, True))
+    await callback.message.edit_text(text=text, reply_markup=keyboards.files.get_files_manager_keyboard(mode, pages=True))
 
 
-@router.message(DataStates.path)
-async def handle_send_document(message: Message):
+@router.message(Command("sendfile"), BotAccessFilter())
+async def handle_send_document(message: Message, command: CommandObject, state: FSMContext):
     logger.logger_event_info(message)
 
+    if command.args is None:
+        await message.reply("💡 Usage example:\n<pre>/sendfile &lt;path&gt;</pre>")
+        return
+
+    current_path = (await state.get_data()).get("path", "")
+    relative_path = command.args
+    path = os.path.abspath(os.path.join(current_path, relative_path))
+
     try:
-        path = message.text.replace("\\", "/")
         filesize = file_ops.get_file_or_directory_size(path)
 
         if os.path.isfile(path):
-            _, filename = path.rsplit("/", maxsplit=1)
+            _, filename = path.rsplit(os.sep, maxsplit=1)
             is_file = True
         elif os.path.isdir(path):
-            await message.reply("🔄 Archiving..")
+            archiving_message = await message.reply("🔄 Archiving...")
             path = file_ops.compress_folder_to_zip(path)
-            _, filename = path.rsplit("/", maxsplit=1)
+            _, filename = path.rsplit(os.sep, maxsplit=1)
             filesize = os.path.getsize(path)
             is_file = False
+            await archiving_message.delete()
         else:
             await message.reply("❌ The specified path does not exist or is not an accessible file/folder")
             return
 
         if filesize < MAX_SIZE:
-            await message.reply(f"🔄 File <code>{filename}</code> is uploading...\n")
+            download_message = await message.reply(f"🔄 File <code>{filename}</code> is uploading...\n")
             await message.reply_document(document=FSInputFile(path=path))
+            await download_message.delete()
         else:
             internet_speed_task = asyncio.create_task(speedtest.measure_speed("upload", False))
 

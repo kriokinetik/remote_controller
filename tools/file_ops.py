@@ -1,6 +1,12 @@
 import os
 import shutil
+import psutil
 from config import MISC_FOLDER
+
+
+def get_drives():
+    partitions = psutil.disk_partitions()
+    return [p.device for p in partitions]
 
 
 def is_hidden_file(file_path: str) -> bool:
@@ -71,7 +77,7 @@ def get_directory_info(current_directory: str) -> (list[str], list[str]):
 
     folders, files = sort_documents_in_directory(current_directory)
 
-    mod_folders = [f"{folder}\\" for folder in folders]
+    mod_folders = [f"<code>/cd {folder}</code>" for folder in folders]
     mod_files = [f"• <code>{file}</code>" for file in files]
 
     return mod_folders, mod_files
@@ -84,7 +90,7 @@ def get_desktop_path() -> str:
     :return: Путь к рабочему столу пользователя.
     """
 
-    return os.path.join(os.path.expanduser("~"), "Desktop") + "\\"
+    return os.path.join(os.path.expanduser("~"), "Desktop")
 
 
 def get_file_or_directory_size(path: str) -> int:
@@ -114,8 +120,8 @@ def compress_folder_to_zip(folder_path: str) -> str:
     :return: Путь к созданному архиву .zip.
     """
 
-    _, folder_name = folder_path[:-1].rsplit("/", maxsplit=1)
-    archive_folder_path = f"{MISC_FOLDER}/{folder_name}"
+    _, folder_name = folder_path.rsplit(os.sep, maxsplit=1)
+    archive_folder_path = f"{MISC_FOLDER}{os.sep}{folder_name}"
 
     if not os.path.exists(f"{archive_folder_path}.zip"):
         shutil.make_archive(archive_folder_path, "zip", folder_path)
@@ -130,7 +136,7 @@ def get_archive_folder_path(folder_name: str) -> str:
     :param folder_name: Название архивируемой папки.
     :return: Путь к временному архиву
     """
-    return f"{MISC_FOLDER}/{folder_name}.zip"
+    return f"{MISC_FOLDER}{os.sep}{folder_name}.zip"
 
 
 def clear_misc_folder() -> None:
