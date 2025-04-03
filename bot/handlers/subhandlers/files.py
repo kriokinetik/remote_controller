@@ -6,7 +6,6 @@ from aiogram.filters import CommandObject, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, FSInputFile
 from aiogram.exceptions import TelegramBadRequest
-from aiogram.utils.keyboard import repeat_last
 
 import tools.file_ops
 from tools import YandexUploader, file_ops, logger, speedtest
@@ -18,7 +17,7 @@ router = Router()
 
 
 def get_navigation_text(path: str, items: list, page_id: int, mode: str) -> str:
-    emoji = "📁" if mode == "folder" else "🔖" # 🎯
+    emoji = "📁" if mode == "folder" else "🔖"
     header_text = f"{emoji} <code>{path}</code>"
 
     if not items:
