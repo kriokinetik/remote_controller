@@ -50,9 +50,10 @@ def sort_documents_in_directory(directory_path: str) -> (list[str], list[str]):
     for item in os.scandir(directory_path):
         if not is_hidden_file(os.path.join(directory_path, item.name)):
             if item.is_dir() and not is_ignored_folders(item.name):
-                folders.append(f"{item.name}\\")
+                folders.append(item.name)
             elif item.is_file() and not is_ignored_document(item.name):
-                files.append(f"• <code>{item.name}</code>")
+                files.append(item.name)
+
     return sorted(folders), sorted(files)
 
 
@@ -70,7 +71,10 @@ def get_directory_info(current_directory: str) -> (list[str], list[str]):
 
     folders, files = sort_documents_in_directory(current_directory)
 
-    return folders, files
+    mod_folders = [f"{folder}\\" for folder in folders]
+    mod_files = [f"• <code>{file}</code>" for file in files]
+
+    return mod_folders, mod_files
 
 
 def get_desktop_path() -> str:
