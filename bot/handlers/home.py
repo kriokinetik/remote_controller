@@ -97,4 +97,9 @@ async def send_speed_test_handler(callback: CallbackQuery):
 
     asyncio.create_task(run_speedtest(message))
 
+
+@router.callback_query(F.data == "*")
+async def empty_handler(callback: CallbackQuery):
+    logger_event_info(callback)
+
     await callback.answer("Uploading...")
