@@ -70,20 +70,17 @@ async def navigate_to_path(message, state: FSMContext, edit: bool = False):
 @router.message(Command("cd"), BotAccessFilter())
 async def cd_handler(message: Message, command: CommandObject, state: FSMContext):
     current_path = (await state.get_data()).get("path", "")
-    relative_path = command.args if command.args is not None else tools.file_ops.get_desktop_path()
+    path = command.args if command.args is not None else tools.file_ops.get_desktop_path()
 
-    if relative_path[1] == ":" and len(relative_path) <= 3:
-        if len(relative_path) == 2:
-            relative_path += os.sep
+    next_path = os.path.expandvars(path)
 
-        if relative_path not in file_ops.get_drives():
-            await message.reply("❌ Cannot find the drive specified")
-            return
+    if not os.path.isabs(next_path):
+        next_path = os.path.join(current_path, next_path)
 
-    next_path = os.path.abspath(os.path.join(current_path, relative_path))
+    next_path = os.path.abspath(next_path)
 
     if not os.path.exists(next_path):
-        await message.reply("❌ Cannot find the path specified.")
+        await message.reply(f"❌ Cannot find path '<code>{next_path}</code>'.")
         return
 
     await state.update_data(path=next_path, mode="folder")
