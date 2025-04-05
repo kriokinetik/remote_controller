@@ -1,2 +1,2 @@
 from .window import RemoteControllerWindow
-from .log_handler import TextHandler
+from .text_handler import TextHandler
