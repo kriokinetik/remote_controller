@@ -1,6 +1,10 @@
 from PyQt6.QtWidgets import QApplication, QMainWindow, QTextEdit, QVBoxLayout, QWidget, QSystemTrayIcon, QMenu
+from PyQt6.QtWidgets import (
+    QApplication, QMainWindow, QTextEdit, QVBoxLayout, QWidget, QSystemTrayIcon, QMenu, QPushButton, QHBoxLayout
+)
 from PyQt6.QtGui import QIcon, QAction, QFont
 
+from gui.config_window import ConfigWindow
 
 class RemoteControllerWindow(QMainWindow):
     def __init__(self):
@@ -14,6 +18,15 @@ class RemoteControllerWindow(QMainWindow):
         self.setCentralWidget(self.central_widget)
 
         layout = QVBoxLayout()
+        # Создаем горизонтальный лэйаут для кнопок
+        button_layout = QHBoxLayout()
+
+        self.open_config_btn = QPushButton("⚙️ Config")
+        self.open_config_btn.clicked.connect(self.open_config_window)
+
+        button_layout.addWidget(self.open_config_btn)
+        # Добавляем горизонтальный лэйаут в основной вертикальный
+        layout.addLayout(button_layout)
         self.log_output = QTextEdit()
         self.log_output.setFont(QFont("Cascadia Mono", 10))
         self.log_output.setReadOnly(True)
@@ -38,6 +51,14 @@ class RemoteControllerWindow(QMainWindow):
         self.tray_icon.activated.connect(self.on_tray_icon_activated)
 
         self.tray_icon.show()
+
+        # Окно конфигурации
+        self.config_window = ConfigWindow()
+
+    def open_config_window(self):
+        self.config_window.show()
+        self.config_window.raise_()
+        self.config_window.activateWindow()
 
     def closeEvent(self, event):
         event.ignore()

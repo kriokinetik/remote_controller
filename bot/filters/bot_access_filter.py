@@ -10,4 +10,4 @@ class BotAccessFilter(Filter):
         Проверяет, является ли отправитель сообщения администратором бота.
         """
 
-        return message.from_user.id == admin
+        return message.from_user.id in admin
