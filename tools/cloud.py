@@ -8,7 +8,7 @@ import hashlib
 from aiogram.types import Message
 
 from bot.keyboards.files import get_progress_keyboard
-from config import yandex_token, yandex_id, yandex_secret, YANDEX_FOLDER
+from config import get_config, YANDEX_FOLDER
 from tools.logger import logger_error, logger
 
 
@@ -16,6 +16,11 @@ class YandexUploader:
     CHUNK_SIZE = 4 * 2**20  # 4MB
 
     def __init__(self, path: str, filesize: int, message: Message, upload_speed: int = None):
+        self.token = get_config()["yandex"]["token"]
+        self.id = get_config()["yandex"]["id"]
+        self.secret = get_config()["yandex"]["secret"]
+
+
         self.path = path
         self.filesize = filesize
         self.message = message
@@ -29,10 +34,10 @@ class YandexUploader:
 
         logger.info(f"YandexUploader initialized for {self.file_basename}, size: {self.filesize} bytes")
 
-    @staticmethod
-    def get_client() -> yadisk.AsyncClient:
+    def get_client(self) -> yadisk.AsyncClient:
         """Создает асинхронный клиент Yandex Disk"""
-        return yadisk.AsyncClient(id=yandex_id, secret=yandex_secret, token=yandex_token)
+
+        return yadisk.AsyncClient(id=self.token, secret=self.secret, token=self.token)
 
     async def check_file_existence(self) -> bool:
         async with self.get_client() as client:

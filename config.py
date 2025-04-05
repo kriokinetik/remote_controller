@@ -1,28 +1,21 @@
-# import os
-# from dotenv import load_dotenv
-#
-# load_dotenv()
-#
-# # TELEGRAM
-# token = os.environ["TOKEN"]
-# admin = int(os.getenv("ADMIN"))
-#
-# # YANDEX
-# yandex_token = os.environ["YANDEX_TOKEN"]
-# yandex_id = os.environ["YANDEX_ID"]
-# yandex_secret = os.environ["YANDEX_SECRET"]
-
 import json
 
 
-with open("config.json") as f:
-    config = json.load(f)
+def get_config() -> {}:
+    with open("config.json") as f:
+        data = json.load(f)
 
-token: str = config["TOKEN"]
-admin: list[int] = config["ADMIN"]
-yandex_token: str = config["YANDEX"]["TOKEN"]
-yandex_id: str = config["YANDEX"]["ID"]
-yandex_secret: str = config["YANDEX"]["SECRET"]
+    config = {
+        "token": data["TOKEN"],
+        "admin": data["ADMIN"],
+        "yandex": {
+            "token": data["YANDEX"]["TOKEN"],
+            "id": data["YANDEX"]["ID"],
+            "secret": data["YANDEX"]["SECRET"]
+        }
+    }
+
+    return config
 
 # CONST
 SCREENSHOT_NAME = "screenshot.png"

@@ -1,20 +1,32 @@
-import asyncio
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.methods import DeleteWebhook
 from aiogram.types import BotCommand
 from aiogram.enums import ParseMode
+from aiogram.utils.token import TokenValidationError
 
 from bot import handlers
-from config import token
+from tools import logger
 
 
 class TelegramBot:
-    def __init__(self):
-        self.bot = Bot(token=token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+    def __init__(self, token):
+        self.token = token
+        self._running = False
+
+        try:
+            self.bot = Bot(token=self.token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+            self.dp = Dispatcher(bot=self.bot)
+            self.include_routers()
+        except TokenValidationError:
+            logger.logger_error("Token is invalid!")
+            return
+
+    def set_token(self, token):
+        self.token = token
+        self.bot = Bot(token=self.token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
         self.dp = Dispatcher(bot=self.bot)
         self.include_routers()
-        self._running = False
 
     async def set_commands(self):
         await self.bot.set_my_commands(

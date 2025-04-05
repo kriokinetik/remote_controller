@@ -1,7 +1,7 @@
 from aiogram.types import Message
 from aiogram.filters import Filter
 
-from config import admin
+from config import get_config
 
 
 class BotAccessFilter(Filter):
@@ -9,5 +9,6 @@ class BotAccessFilter(Filter):
         """
         Проверяет, является ли отправитель сообщения администратором бота.
         """
+        admin = get_config()["admin"]
 
         return message.from_user.id in admin

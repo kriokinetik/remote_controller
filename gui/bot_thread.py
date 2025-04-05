@@ -1,6 +1,7 @@
 import asyncio
 from PyQt6.QtCore import QThread, pyqtSignal
 from bot import TelegramBot
+from config import get_config
 
 
 class BotThread(QThread):
@@ -9,12 +10,16 @@ class BotThread(QThread):
 
     def __init__(self):
         super().__init__()
-        self.bot = TelegramBot()  # Создаем экземпляр бота
+        self.bot = TelegramBot(get_config()["token"])  # Создаем экземпляр бота
         self.loop = asyncio.new_event_loop()  # Создаем новый цикл событий для потока
         self.bot_loop_task = None
 
     def run(self):
         asyncio.set_event_loop(self.loop)
+
+        if self.bot.token != get_config()["token"]:
+            self.bot.set_token(get_config()["token"])
+
         try:
             self.bot_loop_task = self.loop.create_task(self.bot.run())
             self.loop.run_until_complete(self.bot_loop_task)
