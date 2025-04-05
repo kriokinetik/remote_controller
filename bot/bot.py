@@ -13,6 +13,8 @@ class TelegramBot:
     def __init__(self):
         self.bot = Bot(token=token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
         self.dp = Dispatcher(bot=self.bot)
+        self.include_routers()
+        self._running = False
 
     async def set_commands(self):
         await self.bot.set_my_commands(
@@ -36,11 +38,21 @@ class TelegramBot:
         )
 
     async def run(self):
-        await self.set_commands()
-        self.include_routers()
-        await self.bot(DeleteWebhook(drop_pending_updates=True))
-        await self.dp.start_polling(self.bot)
+        if self._running:
+            return
 
-    def async_run(self, loop):
-        asyncio.set_event_loop(loop)
-        loop.run_until_complete(self.run())
+        self._running = True
+
+        try:
+            await self.set_commands()
+            await self.bot(DeleteWebhook(drop_pending_updates=True))
+            await self.dp.start_polling(self.bot)
+        except Exception as e:
+            print(f"[Aiogram error] {e}")
+
+    async def stop(self):
+        self._running = False
+        try:
+            await self.dp.stop_polling()  # Завершаем polling
+        except Exception as e:
+            print(e)
