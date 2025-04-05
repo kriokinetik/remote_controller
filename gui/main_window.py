@@ -9,7 +9,7 @@ from gui.config_window import ConfigWindow
 from gui.bot_thread import BotThread
 
 
-class RemoteControllerWindow(QMainWindow):
+class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 

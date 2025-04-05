@@ -1,13 +1,13 @@
 import sys
 import logging
 from PyQt6.QtWidgets import QApplication
-from gui import RemoteControllerWindow, TextHandler
+from gui import MainWindow, TextHandler
 from config import LOG_FILE
 
 
 def start_gui():
     app = QApplication(sys.argv)
-    window = RemoteControllerWindow()
+    window = MainWindow()
 
     file_handler = logging.FileHandler(filename=LOG_FILE, mode="a", encoding="utf-8")
     app_handler = TextHandler(window.log_output)
