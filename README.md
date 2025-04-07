@@ -1,63 +1,75 @@
-# My Project
+# remote_controller_bot
 
-This is a brief description of your project. Provide an overview of what your project does and its main features.
+Этот бот предназначен для удаленного управления компьютером с помощью Telegram. С его помощью можно выполнять различные команды, такие как отправка файлов, управление устройством и получение информации о скорости интернета.
 
-## Setup Instructions
+## Установка
 
-To get started with this project, follow the steps below:
-
-1. Clone the repository:
+1. Клонируйте репозиторий:
     ```bash
-    git clone https://github.com/kriokinetik/remote_controller.git
-    cd remote_controller
+    git clone https://github.com/kriokinetik/remote_controller_bot.git
     ```
+2. Настройте конфигурацию вручную или после запуска через кнопку **⚙️ Config** в программе.
 
-2. Create a `.env` file in the root directory of your project. This file will store your environment variables. The contents of the `.env` file should look like this:
-
-    ```dotenv
-    TOKEN=
-    ADMIN=
-    YANDEX_TOKEN=
-    YANDEX_ID=
-    YANDEX_SECRET=
-    ```
-
-    - `TOKEN`: Your application's main token.
-    - `ADMIN`: Your admin credentials or identifier.
-    - `YANDEX_TOKEN`: Your Yandex API token.
-    - `YANDEX_ID`: Your Yandex application ID.
-    - `YANDEX_SECRET`: Your Yandex application secret.
-
-3.1 Install the necessary dependencies:
+3. Запустите файл `run.bat`:
     ```bash
-    pip install -r requirements.txt
+    run.bat
     ```
+   
+## Настройка конфигурации
 
-Run the application:
-    ```bash
-    python bot/main.py
-    ```
+Для настройки конфигурации вам необходимо создать файл `config.json` в корневой директории проекта. Это можно сделать вручную или с помощью кнопки **⚙️ Config** в программе после запуска.
 
-3.2 Or run ```bot/run.bat```
+Пример содержимого файла конфигурации:
 
-## Usage
+```json
+{
+  "TOKEN": "bot_token",
+  "ADMIN": [
+    your_telegram_id
+  ],
+  "YANDEX": {
+    "TOKEN": "yandex_token",
+    "ID": "yandex_id",
+    "SECRET": "yandex_secret"
+  }
+}
+```
 
-Provide instructions on how to use your application. You might include examples of commands, screenshots, or any other information that would be helpful for users.
+- **TOKEN**: Токен вашего бота, полученный через [@BotFather](https://t.me/BotFather).
+- **ADMIN**: Список с вашими Telegram ID, полученными через [@getmyid_bot](https://t.me/getmyid_bot).
+- **YANDEX_TOKEN**: OAuth-токен для доступа к Яндекс.Диску.
+- **YANDEX_ID**: Идентификатор вашего приложения в Яндекс.
+- **YANDEX_SECRET**: Секретный ключ вашего приложения в Яндекс.
 
-## Contributing
+### Получение OAuth-токенов для Яндекс.Диска
 
-If you would like to contribute to this project, please follow these steps:
+Чтобы получить значения для `YANDEX_TOKEN`, `YANDEX_ID` и `YANDEX_SECRET`, выполните следующие шаги:
 
-1. Fork the repository.
-2. Create a new branch (`git checkout -b feature-branch`).
-3. Make your changes and commit them (`git commit -m 'Add some feature'`).
-4. Push to the branch (`git push origin feature-branch`).
-5. Open a pull request.
+1. Зарегистрируйте свое приложение на [странице создания приложения](https://oauth.yandex.ru/client/new/).
+   
+2. Войдите в свой аккаунт на Яндексе.
 
-## License
+3. Укажите название приложения и прикрепите иконку, если нужно.
 
-Include information about the license under which your project is distributed.
+4. В **Платформы приложения** выберите **Веб-сервисы**. В поле **Redirect URI** введите `https://oauth.yandex.ru/verification_code`.
 
----
+5. В разделе **Доступ к данным** выберите следующие права доступа:
+   - `cloud_api:disk.app_folder` — Доступ к папке приложения на Диске.
+   - `cloud_api:disk.read` — Чтение всего содержимого Диска.
+   - `cloud_api:disk.write` — Запись в любом месте на Диске.
+   - `cloud_api:disk.info` — Доступ к информации о Диске.
+   - `cloud_api.data:user_data` — Доступ к пользовательским данным.
+   - `cloud_api.data:app_data` — Доступ к данным приложения.
 
-Feel free to customize this README to better suit your project's specifics. Happy coding!
+6. Нажмите **Создать приложение**.
+
+7. Скопируйте следующие значения:
+   - **ClientID** — `YANDEX_ID`
+   - **Client Secret** — `YANDEX_SECRET`
+
+8. Чтобы получить **OAuth-токен**, перейдите по следующей ссылке, подставив в нее ваш **ClientID**:
+   ```bash
+   https://oauth.yandex.ru/authorize?response_type=token&client_id=<ClientID>
+   ```
+
+9. После авторизации Яндекс OAuth перенаправит вас на страницу с вашим токеном. Скопируйте его и используйте в качестве `YANDEX_TOKEN`.
