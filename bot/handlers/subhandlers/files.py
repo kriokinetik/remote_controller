@@ -111,11 +111,13 @@ async def navigate_pages_handler(callback: CallbackQuery, state: FSMContext):
 
     await callback.message.edit_text(text=text, reply_markup=keyboards.files.get_files_manager_keyboard(mode, pages=True))
 
-
 @router.message(Command("sendfile"), BotAccessFilter())
 async def handle_send_document(message: Message, command: CommandObject, state: FSMContext):
     logger.logger_event_info(message)
+    asyncio.create_task(send_document(message, command, state))
 
+
+async def send_document(message: Message, command: CommandObject, state: FSMContext):
     if command.args is None:
         await message.reply("💡 Usage example:\n<pre>/sendfile &lt;path&gt;</pre>")
         return
