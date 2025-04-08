@@ -25,7 +25,7 @@ def get_config() -> {}:
 # CONST
 SCREENSHOT_NAME = "screenshot.png"
 YANDEX_FOLDER = "remote_controller"
-LOG_FILE = "remote_controller.log"
+LOG_DIR = "log"
 MISC_FOLDER = "./misc"
 CONFIG_FILE = "config.json"
 MAX_SIZE = 52428800
