@@ -9,6 +9,6 @@ class BotAccessFilter(Filter):
         """
         Проверяет, является ли отправитель сообщения администратором бота.
         """
-        admin = get_config()["admin"]
+        admin = get_config().get("admin", [])
 
         return message.from_user.id in admin

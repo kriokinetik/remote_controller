@@ -12,7 +12,7 @@ from config import get_config
 
 class TelegramBot:
     def __init__(self):
-        self.token = get_config()["token"]
+        self.token = get_config().get("token", "")
         self.bot = None
         self.dp = None
         self._is_token_valid = False
@@ -68,7 +68,7 @@ class TelegramBot:
             return
 
         if self.bot is None:
-            token = get_config()["token"]
+            token = get_config().get("token", "")
 
             if self.token != token:
                 self.token = token

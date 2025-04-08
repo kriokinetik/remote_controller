@@ -15,10 +15,10 @@ from tools.logger import logger_error, logger
 class YandexUploader:
     CHUNK_SIZE = 4 * 2**20  # 4MB
 
-    def __init__(self, path: str, filesize: int, message: Message, upload_speed: int = None):
-        self.token = get_config()["yandex"]["token"]
-        self.id = get_config()["yandex"]["id"]
-        self.secret = get_config()["yandex"]["secret"]
+    def __init__(self, path: str, filesize: int, upload_speed: int = None):
+        self.token = get_config().get("yandex", {}).get("token", "")
+        self.id = get_config().get("yandex", {}).get("id", "")
+        self.secret = get_config().get("yandex", {}).get("secret", "")
 
 
         self.path = path
