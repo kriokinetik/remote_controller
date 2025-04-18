@@ -14,7 +14,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("remote controller")
         self.setMinimumSize(700, 400)
         self.setGeometry(200, 200, 1000, 500)
-        self.setWindowIcon(QIcon("assets/icon.png"))
+        self.setWindowIcon(QIcon("icon.ico"))
 
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
@@ -53,7 +53,7 @@ class MainWindow(QMainWindow):
 
         self.central_widget.setLayout(layout)
 
-        self.tray_icon = QSystemTrayIcon(QIcon("assets/icon.png"), self)
+        self.tray_icon = QSystemTrayIcon(QIcon("icon.ico"), self)
         self.tray_menu = QMenu(title="remote controller")
 
         open_action = QAction("Open", self)
