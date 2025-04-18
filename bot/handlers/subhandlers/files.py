@@ -1,6 +1,7 @@
 import asyncio
 import os
 import time
+import yadisk.exceptions
 from aiogram import Router, F
 from aiogram.filters import CommandObject, Command
 from aiogram.fsm.context import FSMContext
@@ -128,16 +129,14 @@ async def send_document(message: Message, command: CommandObject, state: FSMCont
 
     try:
         filesize = file_ops.get_file_or_directory_size(path)
-
-        if os.path.isfile(path):
+        is_file = os.path.isfile(path)
+        if is_file:
             _, filename = path.rsplit(os.sep, maxsplit=1)
-            is_file = True
         elif os.path.isdir(path):
             archiving_message = await message.reply("🔄 Archiving...")
             path = file_ops.compress_folder_to_zip(path)
             _, filename = path.rsplit(os.sep, maxsplit=1)
             filesize = os.path.getsize(path)
-            is_file = False
             await archiving_message.delete()
         else:
             await message.reply("❌ The specified path does not exist or is not an accessible file/folder")
@@ -148,54 +147,71 @@ async def send_document(message: Message, command: CommandObject, state: FSMCont
             await message.reply_document(document=FSInputFile(path=path))
             await download_message.delete()
         else:
-            internet_speed_task = asyncio.create_task(speedtest.measure_speed("upload", False))
+            try:
+                internet_speed_task = asyncio.create_task(speedtest.measure_speed("upload", False))
+                rounded_filesize = speedtest.humansize(filesize)
+                yandex_uploader = YandexUploader(path, filesize)
 
-            rounded_filesize = speedtest.humansize(filesize)
+                is_file_exist = await yandex_uploader.check_file_existence()
 
-            download_message = await message.reply(
-                f"🔄 File <code>{filename}</code> is uploading to Yandex.Disk...\n"
-                f"📏 Size: <code>{rounded_filesize}</code>\n"
-                f"⏳ Estimated time: —",
-                reply_markup=keyboards.files.get_progress_keyboard("...")
-            )
-
-            yandex_uploader = YandexUploader(path, filesize, download_message)
-
-            if not await yandex_uploader.check_file_existence():
-                try:
-                    internet_speed = await internet_speed_task
-                    logger.logger_info(f"Upload speed: {internet_speed}")
-
-                    upload_time = filesize / internet_speed
-                    estimated_time = time.strftime("%H:%M:%S", time.gmtime(upload_time))
-
-                    yandex_uploader.upload_speed = internet_speed
-
-                except ValueError as e:
-                    estimated_time = "N/A"
-                    logger.logger_error(e)
-
-                download_message = await download_message.edit_text(
-                    f"📂 File: <code>{filename}</code> is uploading to Yandex.Disk...\n"
+                download_message = await message.reply(
+                    f"🔄 File <code>{filename}</code> is uploading to Yandex.Disk...\n"
                     f"📏 Size: <code>{rounded_filesize}</code>\n"
-                    f"⏳ Estimated time: {estimated_time}",
-                    reply_markup=download_message.reply_markup)
-
+                    f"⏳ Estimated time: —",
+                    reply_markup=keyboards.files.get_progress_keyboard("...")
+                )
                 yandex_uploader.message = download_message
 
-                await yandex_uploader.upload_file_to_yandex_disk()
-                logger.logger_info(f"Start uploading file '{path}' (size: {filesize} bytes) to Yandex Disk")  # logging
+                if not is_file_exist:
+                    try:
+                        internet_speed = (await internet_speed_task)  / 8
+                        logger.logger_info(f"Upload speed: {internet_speed} Bps")
 
-            download_link = await yandex_uploader.get_yandex_link()
-            logger.logger_info(f"File '{path}' (size: {filesize} bytes) has been successfully uploaded to Yandex Disk")
-            await download_message.edit_text(f"📂 File: <code>{filename}</code>\n"
-                                             f"📏 Size: <code>{rounded_filesize}</code>",
-                                             reply_markup=keyboards.files.get_progress_keyboard(
-                                                 "⬇️ Download file...", download_link)
-                                             )
-        if not is_file:
-            os.remove(path)
+                        upload_time = filesize / internet_speed
+                        estimated_time = time.strftime("%H:%M:%S", time.gmtime(upload_time))
+
+                        yandex_uploader.upload_speed = internet_speed
+                    except ValueError as e:
+                        estimated_time = "N/A"
+                        logger.logger_error(e)
+
+                    download_message = await download_message.edit_text(
+                        f"📂 File: <code>{filename}</code> is uploading to Yandex.Disk...\n"
+                        f"📏 Size: <code>{rounded_filesize}</code>\n"
+                        f"⏳ Estimated time: {estimated_time}",
+                        reply_markup=download_message.reply_markup
+                    )
+                    yandex_uploader.message = download_message
+
+                    await yandex_uploader.upload_file_to_yandex_disk()
+                    logger.logger_info(f"Start uploading file '{path}' (size: {filesize} bytes) to Yandex Disk")  # logging
+
+                download_link = await yandex_uploader.get_yandex_link()
+
+                logger.logger_info(
+                    f"File '{path}' (size: {filesize} bytes) has been successfully uploaded to Yandex Disk"
+                )
+
+                await download_message.edit_text(
+                    f"📂 File: <code>{filename}</code>\n"
+                    f"📏 Size: <code>{rounded_filesize}</code>",
+                    reply_markup=keyboards.files.get_progress_keyboard(
+                        "⬇️ Download file...", download_link)
+                )
+
+            except yadisk.exceptions.UnauthorizedError as e:
+                logger.logger_error(e)
+                await message.answer(
+                    "❌ Yandex.Disk authorization error.\n"
+                    "Check your configuration:\n"
+                    "• <code>OAuth token</code>\n"
+                    "• <code>Client ID</code>\n"
+                    "• <code>Client Secret</code>\n"
+                )
 
     except (FileNotFoundError, PermissionError) as e:
         logger.logger_error(e, exc_info=True)
         await message.answer(f"<blockquote>{e}</blockquote>")
+    finally:
+        if not is_file:
+            os.remove(path)
