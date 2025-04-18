@@ -1,7 +1,7 @@
 import os
 import shutil
 import psutil
-from config import MISC_FOLDER
+from config import TEMP_FOLDER
 
 
 def get_drives():
@@ -121,7 +121,7 @@ def compress_folder_to_zip(folder_path: str) -> str:
     """
 
     _, folder_name = folder_path.rsplit(os.sep, maxsplit=1)
-    archive_folder_path = f"{MISC_FOLDER}{os.sep}{folder_name}"
+    archive_folder_path = f"{TEMP_FOLDER}{os.sep}{folder_name}"
 
     if not os.path.exists(f"{archive_folder_path}.zip"):
         shutil.make_archive(archive_folder_path, "zip", folder_path)
@@ -136,14 +136,14 @@ def get_archive_folder_path(folder_name: str) -> str:
     :param folder_name: Название архивируемой папки.
     :return: Путь к временному архиву
     """
-    return f"{MISC_FOLDER}{os.sep}{folder_name}.zip"
+    return f"{TEMP_FOLDER}{os.sep}{folder_name}.zip"
 
 
 def clear_misc_folder() -> None:
-    if os.path.exists(MISC_FOLDER):
+    if os.path.exists(TEMP_FOLDER):
         # Удаляем все содержимое папки
-        for filename in os.listdir(MISC_FOLDER):
-            file_path = os.path.join(MISC_FOLDER, filename)
+        for filename in os.listdir(TEMP_FOLDER):
+            file_path = os.path.join(TEMP_FOLDER, filename)
             try:
                 if os.path.isdir(file_path):
                     shutil.rmtree(file_path)  # Удаляем папки

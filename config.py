@@ -26,7 +26,7 @@ def get_config() -> {}:
 SCREENSHOT_NAME = "screenshot.png"
 YANDEX_FOLDER = "remote_controller"
 LOG_DIR = "log"
-MISC_FOLDER = "./misc"
+TEMP_FOLDER = "./temp"
 CONFIG_FILE = "config.json"
 MAX_SIZE = 52428800
 MAX_MESSAGE_LENGTH = 4096
