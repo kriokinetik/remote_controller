@@ -37,6 +37,7 @@ def configure_logging(window):
 def start_gui():
     app = QApplication(sys.argv)
     window = MainWindow()
+    window.show()
 
     configure_logging(window)
 
