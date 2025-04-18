@@ -62,7 +62,7 @@ async def buttons_click_handler(callback: CallbackQuery):
 async def minimize_windows_handler(callback: CallbackQuery):
     logger_event_info(callback)
 
-    pyautogui.hotkey("win", "m")
+    pyautogui.hotkey("win", "d")
     await callback.answer("Windows successfully minimized")
 
 
