@@ -5,8 +5,6 @@ import asyncio
 import os
 import time
 import hashlib
-from aiogram.types import Message
-
 from bot.keyboards.files import get_progress_keyboard
 from config import get_config, YANDEX_FOLDER
 from tools.logger import logger_error, logger
@@ -23,7 +21,7 @@ class YandexUploader:
 
         self.path = path
         self.filesize = filesize
-        self.message = message
+        self.message = None
         self.upload_speed = upload_speed
 
         self.file_basename = path.rsplit(os.sep, maxsplit=1)[1]
