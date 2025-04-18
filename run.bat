@@ -1,3 +1,5 @@
+cd /d "%~dp0"
+
 SET "VENV_DIR=.venv"
 
 IF NOT EXIST "%VENV_DIR%" (
