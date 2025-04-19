@@ -40,13 +40,15 @@ class TelegramBot:
     async def set_commands(self):
         await self.bot.set_my_commands(
             [
-                BotCommand(command="cd", description="Navigate to a specified directory"),
-                BotCommand(command="sendfile", description="Send a file"),
-                BotCommand(command="remote", description="Send the control panel to manage the device"),
-                BotCommand(command="screenshot", description="Capture and send a screenshot"),
-                BotCommand(command="speedtest", description="Measure and send internet speed"),
-                BotCommand(command="restart", description="Restart the computer"),
-                BotCommand(command="shutdown", description="Shutdown the computer"),
+                BotCommand(command="cd", description="navigate to a specified directory"),
+                BotCommand(command="sendfile", description="send a file"),
+                BotCommand(command="remote", description="send the control panel to manage the device"),
+                BotCommand(command="minimize", description="minimize/restore windows"),
+                BotCommand(command="screenshot", description="capture and send a screenshot"),
+                BotCommand(command="speedtest", description="measure and send internet speed"),
+                BotCommand(command="lock", description="lock the computer"),
+                BotCommand(command="restart", description="restart the computer"),
+                BotCommand(command="shutdown", description="shutdown the computer")
             ]
         )
 
@@ -56,9 +58,9 @@ class TelegramBot:
 
         self.dp.include_routers(
             handlers.home.router,
-            handlers.subhandlers.input.router,
             handlers.subhandlers.files.router,
-            handlers.subhandlers.system.router
+            handlers.subhandlers.system.router,
+            handlers.subhandlers.input.router
         )
 
         self._routers_included = True
