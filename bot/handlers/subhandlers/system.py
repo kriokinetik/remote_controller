@@ -2,12 +2,21 @@ from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command
 import os
+import ctypes
 
 from bot import keyboards
 from bot.filters import BotAccessFilter
 from tools.logger import logger_event_info
 
 router = Router()
+
+
+@router.message(Command("lock"), BotAccessFilter())
+async def minimize_windows_handler(message: Message):
+    logger_event_info(message)
+
+    ctypes.windll.user32.LockWorkStation()
+    await message.answer("🔒 Computer locked")
 
 
 # Обработчик для запроса подтверждения перезагрузки или выключения компьютера
