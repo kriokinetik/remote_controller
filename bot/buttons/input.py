@@ -14,9 +14,3 @@ right = InlineKeyboardButton(text="→", callback_data="move_right")
 space = InlineKeyboardButton(text="Space", callback_data="press_space")
 backspace = InlineKeyboardButton(text="Backspace", callback_data="press_backspace")
 enter = InlineKeyboardButton(text="Enter", callback_data="press_enter")
-
-# Дополнительные кнопки
-replace_mouse = InlineKeyboardButton(text="🖱️ Move cursor", callback_data="replace_mouse")
-
-# Кнопка для сворачивания всех окон
-minimize = InlineKeyboardButton(text="🖥️ Minimize all windows", callback_data="minimize")
