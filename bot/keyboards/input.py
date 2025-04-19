@@ -6,10 +6,6 @@ input_controls = InlineKeyboardMarkup(
     inline_keyboard=[
         [buttons.input.mouse_left, buttons.input.up, buttons.input.mouse_right],
         [buttons.input.left, buttons.input.down, buttons.input.right],
-        [buttons.input.space, buttons.input.backspace, buttons.input.enter],
-        [buttons.input.replace_mouse],
-        [buttons.input.minimize]
+        [buttons.input.space, buttons.input.backspace, buttons.input.enter]
     ]
 )
-
-to_input_controls = InlineKeyboardMarkup(inline_keyboard=[[buttons.home.input_controls]])

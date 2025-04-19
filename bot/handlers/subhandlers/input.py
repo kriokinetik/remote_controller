@@ -1,12 +1,11 @@
 from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery, BufferedInputFile
-from aiogram.fsm.context import FSMContext
+from aiogram.filters import Command
 import pyautogui
 
 import tools
+from bot.filters import BotAccessFilter
 from tools.logger import logger_event_info
-from bot.states import DataStates
-from bot import keyboards
 from config import SCREENSHOT_NAME
 
 router = Router()
@@ -58,47 +57,49 @@ async def buttons_click_handler(callback: CallbackQuery):
 
 
 # Обработчик для кнопки "Свернуть все окна"
-@router.callback_query(F.data == "minimize")
-async def minimize_windows_handler(callback: CallbackQuery):
-    logger_event_info(callback)
+@router.message(Command("minimize"), BotAccessFilter())
+async def minimize_windows_handler(message: Message):
+    logger_event_info(message)
 
     pyautogui.hotkey("win", "d")
-    await callback.answer("Windows successfully minimized")
+
+    with tools.screenshot.overlay_cursor_on_screenshot(True) as image:
+        image.seek(0)
+        await message.reply_document(
+            caption="📍 Windows successfully minimized/restored",
+            document=BufferedInputFile(file=image.read(), filename=SCREENSHOT_NAME)
+        )
 
 
-# Обработчик для запроса координат мыши
-@router.callback_query(F.data == "replace_mouse")
-async def request_coordinates_handler(callback: CallbackQuery, state: FSMContext):
-    logger_event_info(callback)
+@router.message(Command("help_cursor"), BotAccessFilter())
+async def help_cursor_handler(message: Message):
+    logger_event_info(message)
 
     bound_x, bound_y = pyautogui.size()
-    await callback.message.edit_text(
-        text=f"📍 Enter cursor coordinates\n"
-             f"↔️ <code>X: 0 — {bound_x - 1}</code>\n"
-             f"↕️ <code>Y: 0 — {bound_y - 1}</code>\n\n"
-             f"<i>Send coordinates in format:</i> <code>x y</code>\n",
-        reply_markup=keyboards.input.to_input_controls
+
+    await message.answer(
+        f"📍 To move the cursor, just send a message with coordinates, "
+        f"following the format and limits below:\n\n"
+        f"↔️ x: <code>1 — {bound_x - 1}</code>\n"
+        f"↕️ y: <code>1 — {bound_y - 1}</code>\n\n"
+        f"Format: <code>x y</code>\n"
     )
-    await state.set_state(DataStates.coordinates)
 
 
 # Обработчик для получения координат мыши
-@router.message(DataStates.coordinates)
-async def replace_mouse_handler(message: Message):
+@router.message(F.text.regexp(r"^\d+\s\d+$"), BotAccessFilter())
+async def move_cursor_handler(message: Message):
     logger_event_info(message)
 
-    try:
-        x, y = map(int, message.text.split())
-        bound_x, bound_y = pyautogui.size()
-        if 0 <= x < bound_x and 0 <= y < bound_y:
-            pyautogui.moveTo(x, y)
-            with tools.screenshot.overlay_cursor_on_screenshot(True) as image:
-                image.seek(0)
-                await message.answer_document(
-                    caption=f"📍 Cursor moved to ({x}, {y})",
-                    document=BufferedInputFile(file=image.read(), filename=SCREENSHOT_NAME)
-                )
-        else:
-            await message.reply("❌ Coordinates out of range")
-    except (ValueError, IndexError):
-        await message.reply("❌ Incorrect coordinate format")
+    x, y = map(int, message.text.split())
+    bound_x, bound_y = pyautogui.size()
+    if 1 <= x < bound_x and 1 <= y < bound_y:
+        pyautogui.moveTo(x, y)
+        with tools.screenshot.overlay_cursor_on_screenshot(True) as image:
+            image.seek(0)
+            await message.reply_document(
+                caption=f"📍 Cursor moved to ({x}, {y})",
+                document=BufferedInputFile(file=image.read(), filename=SCREENSHOT_NAME)
+            )
+    else:
+        await message.reply("❌ Coordinates out of range")
