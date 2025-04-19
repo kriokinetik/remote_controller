@@ -56,6 +56,17 @@ async def buttons_click_handler(callback: CallbackQuery):
     await callback.answer(f"🕹️'{button}' key pressed")
 
 
+# Обработчик регулировки громкости
+@router.callback_query(F.data.in_({"volumedown", "volumeup", "volumemute"}))
+async def buttons_click_handler(callback: CallbackQuery):
+    logger_event_info(callback)
+
+    button = callback.data
+
+    pyautogui.press(button)
+    await callback.answer(f"🕹️'{button}' done")
+
+
 # Обработчик для кнопки "Свернуть все окна"
 @router.message(Command("minimize"), BotAccessFilter())
 async def minimize_windows_handler(message: Message):

@@ -14,3 +14,8 @@ right = InlineKeyboardButton(text="→", callback_data="move_right")
 space = InlineKeyboardButton(text="Space", callback_data="press_space")
 backspace = InlineKeyboardButton(text="Backspace", callback_data="press_backspace")
 enter = InlineKeyboardButton(text="Enter", callback_data="press_enter")
+
+# Кнопки для регулировки громкости
+volume_down = InlineKeyboardButton(text="🔉", callback_data="volumedown")
+volume_up = InlineKeyboardButton(text="🔊", callback_data="volumeup")
+volume_mute = InlineKeyboardButton(text="🔇", callback_data="volumemute")
