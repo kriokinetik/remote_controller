@@ -23,6 +23,29 @@ async def start_handler(message: Message):
     )
 
 
+@router.message(Command("help"), BotAccessFilter())
+async def help_hanlder(message: Message):
+    logger_event_info(message)
+
+    await message.answer(
+        "I can assist you with managing your computer remotely. Use these commands to control the device:\n\n"
+        "<b>File Management</b>\n"
+        "/cd - navigate to a specified directory\n"
+        "/sendfile - send a file to the device\n\n"
+        "<b>Remote Control</b>\n"
+        "/remote - send the control panel to manage the device\n"
+        "/minimize - minimize/restore windows\n\n"
+        "<b>System Actions</b>\n"
+        "/screenshot - capture and send a screenshot of the screen\n"
+        "/speedtest - measure and send your internet speed\n"
+        "/lock"
+        "/restart - restart the computer\n"
+        "/shutdown - shutdown the compute\n\n"
+        "<b>Help</b>\n"
+        "/help_cursor - instructions for cursor control"
+    )
+
+
 @router.message(Command("screenshot"), BotAccessFilter())
 async def screenshot_handler(message: Message):
     logger_event_info(message)
