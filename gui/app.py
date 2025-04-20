@@ -13,14 +13,14 @@ def configure_logging(window):
         os.makedirs(LOG_DIR)
 
     # Форматирование имени файла с датой
-    log_filename = datetime.now().strftime("log_%Y-%m-%d.log")
+    log_filename = "log.log"
     log_file = os.path.join(LOG_DIR, log_filename)
 
     file_handler = TimedRotatingFileHandler(
         log_file,
         when="midnight",
-        interval=7,
-        backupCount=50,
+        interval=1,
+        backupCount=7,
         encoding="utf-8"
     )
 
