@@ -82,21 +82,6 @@ async def minimize_windows_handler(message: Message):
         )
 
 
-@router.message(Command("help_cursor"), BotAccessFilter())
-async def help_cursor_handler(message: Message):
-    logger_event_info(message)
-
-    bound_x, bound_y = pyautogui.size()
-
-    await message.answer(
-        f"📍 To move the cursor, just send a message with coordinates, "
-        f"following the format and limits below:\n\n"
-        f"↔️ x: <code>1 — {bound_x - 1}</code>\n"
-        f"↕️ y: <code>1 — {bound_y - 1}</code>\n\n"
-        f"Format: <code>x y</code>\n"
-    )
-
-
 # Обработчик для получения координат мыши
 @router.message(F.text.regexp(r"^\d+\s\d+$"), BotAccessFilter())
 async def move_cursor_handler(message: Message):

@@ -23,29 +23,6 @@ async def start_handler(message: Message):
     )
 
 
-@router.message(Command("help"), BotAccessFilter())
-async def help_hanlder(message: Message):
-    logger_event_info(message)
-
-    await message.answer(
-        "I can assist you with managing your computer remotely. Use these commands to control the device:\n\n"
-        "<b>File Management</b>\n"
-        "/cd - navigate to a specified directory\n"
-        "/sendfile - send a file to the device\n\n"
-        "<b>Remote Control</b>\n"
-        "/remote - send the control panel to manage the device\n"
-        "/minimize - minimize/restore windows\n\n"
-        "<b>System Actions</b>\n"
-        "/screenshot - capture and send a screenshot of the screen\n"
-        "/speedtest - measure and send your internet speed\n"
-        "/lock"
-        "/restart - restart the computer\n"
-        "/shutdown - shutdown the compute\n\n"
-        "<b>Help</b>\n"
-        "/help_cursor - instructions for cursor control"
-    )
-
-
 @router.message(Command("screenshot"), BotAccessFilter())
 async def screenshot_handler(message: Message):
     logger_event_info(message)
@@ -66,17 +43,6 @@ async def remote_handler(message: Message, state: FSMContext):
     await message.answer(text="Mouse & Keyboard",
                          reply_markup=keyboards.input.input_controls)
 
-    if await state.get_state() is not None:
-        await state.set_state(state=None)
-
-
-@router.callback_query(F.data == "remote")
-async def callback_remote_handler(callback: CallbackQuery, state: FSMContext):
-    logger_event_info(callback)
-
-    await callback.message.edit_text(text="Mouse & Keyboard",
-                                     reply_markup=keyboards.input.input_controls)
-    await callback.answer()
     if await state.get_state() is not None:
         await state.set_state(state=None)
 
